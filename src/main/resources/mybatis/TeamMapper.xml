@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="Team">
+    <!-- 팀 등록 -->
+    <insert id="teamSave" parameterType="com.letskuf.dto.TeamDTO" useGeneratedKeys="true" keyProperty="teamId">
+        insert into team(
+         team_nm
+        ,found_year
+        ,postcode
+        ,address
+        ,address_detail
+        ,region_nm
+        ,file_attached
+        ) values (
+         #{teamNm}
+        ,#{foundYear}
+        ,#{postcode}
+        ,#{address}
+        ,#{detailAddress}
+        ,#{regionNm}
+        ,#{fileAttached}
+        )
+    </insert>
+
+    <!-- 팀 수정 -->
+    <update id="teamUpdate" parameterType="com.letskuf.dto.TeamDTO">
+        update team
+        set team_nm = #{teamNm},
+            found_year = #{foundYear},
+            postcode = #{postcode},
+            address = #{address},
+            address_detail = #{detailAddress},
+            file_attached = #{fileAttached}
+        where team_id = #{teamId}
+    </update>
+
+    <!-- 팀 삭제 -->
+    <delete id="teamDelete" parameterType="int">
+        delete
+          from team
+         where team_id = #{teamId}
+    </delete>
+
+    <!-- teamFileListMap resultMap 정의 -->
+    <resultMap id="teamFileListMap" type="com.letskuf.dto.TeamFileDTO">
+        <result property="originalFileName" column="original_file_nm" />
+        <result property="storedFileName" column="stored_file_nm" />
+        <result property="teamId" column="team_id" />
+        <result property="fileId" column="file_id" />
+    </resultMap>
+
+    <!-- 팀 사진 조회 -->
+    <select id="teamFileListByTeamId" parameterType="int" resultMap="teamFileListMap">
+        select original_file_nm
+             ,stored_file_nm
+             ,team_id
+             ,file_id
+        from team_photo_file
+        where team_id = #{teamId}
+    </select>
+
+    <!-- 팀 사진 등록 -->
+    <insert id="teamFileSave" parameterType="com.letskuf.dto.TeamFileDTO" useGeneratedKeys="true" keyProperty="fileId">
+        insert into team_photo_file(
+             original_file_nm
+            ,stored_file_nm
+            ,team_id
+            ) values (
+                 #{originalFileName}
+                ,#{storedFileName}
+                ,#{teamId})
+    </insert>
+
+    <!-- 팀 사진 삭제 -->
+    <delete id="teamFileDelete" parameterType="int">
+        delete
+          from team_photo_file
+         where file_id = #{fileId}
+    </delete>
+
+    <!-- teamList resultMap 정의 -->
+    <resultMap id="teamListMap" type="com.letskuf.dto.TeamDTO">
+        <result property="teamId" column="team_id" />
+        <result property="teamNm" column="team_nm" />
+        <result property="regionNm" column="region_nm" />
+        <result property="coachNm" column="coach_nm" />
+    </resultMap>
+
+    <!-- 팀 전체 조회 -->
+    <select id="teamList" parameterType="com.letskuf.dto.TeamDTO" resultMap="teamListMap">
+        select t.team_id
+              ,t.team_nm
+              ,t.region_nm
+              ,c.name as coach_nm
+          from (
+            select  team_id
+                   ,team_nm
+                   ,region_nm
+            from team
+            order by team_id desc
+          ) t
+          left join coach c
+              on t.team_id = c.team_id
+              and c.title = '감독'
+        limit #{recordCountPerPage} offset #{firstIndex}
+    </select>
+
+    <!-- 팀 전체 건수 조회 -->
+    <select id="teamListCnt" parameterType="com.letskuf.dto.TeamDTO" resultType="java.lang.Integer">
+        select COUNT(team_id)
+        from team
+    </select>
+
+    <!-- 팀 목록 조회 -->
+    <select id="teamListAll" parameterType="com.letskuf.dto.TeamDTO" resultMap="teamListMap">
+        select  team_id
+                ,team_nm
+                ,region_nm
+          from team
+      order by team_id desc
+    </select>
+
+    <!-- teamDetailMap resultMap 정의 -->
+    <resultMap id="teamDetailMap" type="com.letskuf.dto.TeamDTO">
+        <result property="teamNm" column="team_nm" />
+        <result property="address" column="address" />
+    </resultMap>
+
+    <!-- 팀 상세 조회 -->
+    <select id="teamListByTeamId" parameterType="int" resultMap="teamDetailMap">
+        select t.team_nm
+              ,t.address
+          from team t
+         where t.team_id = #{teamId}
+    </select>
+
+    <!-- teamDetailUpdateMap 정의 -->
+    <resultMap id="teamDetailUpdateMap" type="com.letskuf.dto.TeamDTO">
+        <result property="teamNm" column="team_nm" />
+        <result property="foundYear" column="found_year" />
+        <result property="postcode" column="postcode" />
+        <result property="address" column="address" />
+        <result property="detailAddress" column="address_detail" />
+    </resultMap>
+
+    <!-- 팀 상세 조회 (수정용) -->
+    <select id="teamUpdateListByTeamId" parameterType="int" resultMap="teamDetailUpdateMap">
+        select t.team_nm
+              ,t.found_year
+              ,t.postcode
+              ,t.address
+              ,t.address_detail
+          from team t
+         where t.team_id = #{teamId}
+    </select>
+
+    <!-- teamFileUpdateMap 정의 -->
+    <resultMap id="teamFileUpdateMap" type="com.letskuf.dto.TeamFileDTO">
+        <result property="originalFileName" column="original_file_nm" />
+        <result property="storedFileName" column="stored_file_nm" />
+    </resultMap>
+
+    <!-- 팀 사진 조회 (수정용) -->
+    <select id="teamFileUpdateListByTeamId" parameterType="int" resultMap="teamFileUpdateMap">
+        select t.original_file_nm
+              ,t.stored_file_nm
+          from team_photo_file t
+         where t.team_id = #{teamId}
+    </select>
+
+</mapper>

@@ -1,0 +1,438 @@
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css");
+
+body {
+    font-family: 'Pretendard Variable', sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    width: 100%;
+}
+
+a {
+	text-decoration:none;
+	color: inherit;
+}
+
+/*로그인, 회원가입 공통*/
+.formContainer {
+    background-color: #fff;
+    padding: 100px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.menuTitle {
+    font-weight: 700;
+    font-size: 24px;
+    line-height: 29px;
+    text-align: center;
+    color: #353535;
+    margin-bottom: 40px;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+label > .idSave {
+    color: #9a9a9a;
+    font-size: 14px;
+}
+
+input, textarea, select {
+    padding: 10px 14px;
+    font-family: 'Pretendard Variable', sans-serif;
+    border: 1px solid #cecece;
+    border-radius: 8px;
+    font-size: 16px;
+}
+
+button {
+    font-family: Pretendard Variable;
+    padding: 10px;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    width: 100%;
+    height: 42px;
+    border-radius: 8px;
+
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: normal;
+}
+
+/*로그인*/
+#loginForm {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+#loginButton {
+    display: flex;
+    padding: 10px 14px;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    background-color: #2D3645;
+}
+
+#kakaoLogin {
+    display: flex;
+    padding: 5px 8px;
+    align-items: center;
+    justify-content: center;
+    gap: 60px;
+    color: #191600;
+    background: url(./image\ 1.png) #F9E000 no-repeat 10px center;
+}
+
+.find_wrap {
+    color: #CECECE;
+    padding: 20px;
+    margin-bottom: 50px;
+    text-align: center;
+    font-size: 16px;
+}
+
+.find_wrap > a {
+    margin: 0 16px;
+}
+
+
+/*회원가입*/
+.form-group {
+    display: flex;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.form-group.margin0 {
+    margin: 0;
+}
+
+form#regForm {
+    margin: 30px 0 30px 0;
+}
+
+.form-password {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.form-password-check {
+    display: flex;
+    flex-direction: column;
+    margin-left: 70px;
+}
+
+.caution {
+    font-size: 12px;
+    color: #9a9a9a;
+    display: inline-block;
+    margin: 8px 0;
+}
+
+.btn.btn-success {
+    background-color: #2D3645;
+    margin-right: 16px;
+}
+
+.cancel.btn {
+    background-color: #9a9a9a;
+}
+
+.control-label {
+    width: 70px;
+    display: inline-block;
+}
+.form-control {
+    width: 300px;
+}
+
+
+button.check {
+    width: 100px;
+    background-color: #353535;
+    font-weight: 400;
+    margin-left: 8px;
+}
+
+/*등록*/
+.regFormContainer {
+    padding: 100px;
+    border-radius: 8px;
+}
+.regFormContainer h2 {
+    font-size: 40px;
+    margin-bottom: 56px;
+}
+/* #regForm label {
+    margin-bottom: 8px;
+}
+*/
+#regForm input,
+#regForm select
+ {
+    width: auto;
+}
+#regForm textarea {
+    width: calc(100% - 90px);
+}
+
+#regForm {
+    margin-bottom: 56px;
+}
+
+#regForm .content {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    width: 100%;
+}
+
+#regForm .content.select2-wrapper {
+    align-items: flex-start; /* 위쪽 정렬 */
+    flex-direction: column;  /* label과 select를 수직 정렬 */
+}
+
+#regForm .content label {
+    width: 90px;
+    display: inline-block;
+}
+
+.addressContent label {
+    display: block;
+    margin-bottom: 20px;
+}
+
+.address {
+    margin-bottom: 20px;
+}
+
+.address input {
+    width: 400px;
+}
+
+.address input.addressBtn {
+    width: 100px;
+}
+
+/* #regForm .content:last-child {
+    gap: 20px;
+} */
+
+.container {
+    width: 100%;
+    height: calc(100vh - 70px);
+    display: flex;
+}
+
+.regFormContainer {
+    width: calc(100% - 16%);
+    margin: 0 auto;
+    margin-left: 300px;
+}
+
+/*강의 목록 메인 페이지*/
+.regFormContainer {
+    width: 100%;
+    margin: 5%;
+    padding: 0%;
+}
+.regFormContainer > h3 {
+    font-size: 36px;
+    margin: 0;
+}
+.lookupContainer {
+    border-spacing: 0 10px;
+    margin: 20px 0;
+}
+.lookupContainer .lookupDate > input{
+    margin: 0 5px;
+}
+.courseList {
+    /*width: 100%;*/
+    border: 1px solid #2D3645;
+    border-spacing: 0;
+    overflow: hidden;
+}
+.courseList thead{ 
+    background-color: #2D3645;
+    color: #fff;
+}
+
+.courseList tr {
+    width: 100%;
+}
+.courseList thead th {
+    width: 23%;
+    padding: 10px 0;
+}
+.courseList thead th:first-child {
+    width: 8%;
+    padding: 10px 0;
+}
+
+.courseList tbody {
+    background-color: #fff;
+    font-weight: 400;
+}
+
+.courseList tbody td {
+    padding: 10px 0;
+    text-align: center;
+}
+
+/*sideMenu*/
+.sidebarContainer {
+    border: 1px solid white;
+    border-radius: 0;
+    margin: 0;
+    width: 22%;
+    padding: 38px 15px 0 15px;
+    top: 0;
+    left: 0;
+    background-color: #2D3645;
+    color: white;
+}
+
+.sidebarBox {
+    margin-bottom: 30px;
+}
+
+.sidebarMainTitle {
+    margin-bottom: 15px;
+}
+
+.txtCate {
+    font-size: 20px;
+    margin-bottom: 10px;
+}
+
+.sidebarDetailTitle {
+    text-align: match-parent;
+}
+
+.txtList {
+    display: block;
+    margin-bottom: 0px;
+    background-color: red;
+}
+
+.sideLogo {
+    width: 20px;
+}
+
+/* header */
+.header {
+    background-color: white;
+    height: 72px;
+    width: 100%;
+    color: black;
+    font-size: 40px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    margin-left: 20px;
+}
+
+.mainWrap {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+/* 팀 목록 검색 */
+/* 소속팀 선택 영역을 위한 특별 클래스 */
+.team-select-container {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+.team-select-container label {
+    margin-bottom: 8px;
+}
+
+/* Select2 컨테이너 스타일 */
+.select2-container {
+    width: 100% !important;
+    min-width: 200px;
+}
+
+/* Select2 선택 상자 높이 조정 */
+.select2-container--default .select2-selection--single {
+    height: 42px;
+    border: 1px solid #cecece;
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    position: relative;
+}
+
+/* 선택된 텍스트 위치 조정 */
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+    line-height: normal;
+    padding-left: 0;
+    white-space: normal; /* 텍스트 줄바꿈 허용 */
+    overflow: visible; /* 오버플로우 표시 */
+    text-overflow: clip; /* 말줄임표 제거 */
+    width: 100%; /* 전체 너비 사용 */
+    text-align: center; /* 텍스트 중앙 정렬 */
+}
+
+/* 드롭다운 화살표 위치 조정 - 화살표 가운데에서 오른쪽 끝으로 이동 */
+.select2-container--default .select2-selection--single .select2-selection__arrow {
+    height: 100%;
+    top: 0;
+    right: 10px;
+    position: absolute;
+}
+
+/* 드롭다운 메뉴 스타일링 */
+.select2-dropdown {
+    border: 1px solid #cecece;
+    border-radius: 8px;
+}
+
+/* 검색 입력란 스타일링 */
+.select2-container--default .select2-search--dropdown .select2-search__field {
+    border: 1px solid #cecece;
+    border-radius: 4px;
+    padding: 8px;
+}
+
+/* 드롭다운 옵션 스타일링 */
+.select2-results__option {
+    padding: 8px 12px;
+    white-space: normal; /* 텍스트 줄바꿈 허용 */
+    word-wrap: break-word; /* 긴 단어 줄바꿈 */
+    text-align: left; /* 텍스트 중앙 정렬 */
+}
+
+/* 드롭다운 컨테이너 너비 설정 */
+.select2-container--open .select2-dropdown {
+    min-width: 300px; /* 최소 너비 설정 */
+    max-width: 500px; /* 최대 너비 제한 (필요 시 조정) */
+}
+
+/* 검색 결과 텍스트 스타일링 */
+.select2-results__options {
+    max-height: 250px;
+    overflow-y: auto;
+}

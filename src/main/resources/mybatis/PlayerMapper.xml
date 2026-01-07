@@ -1,0 +1,271 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="Player">
+    <!-- 선수 등록 -->
+    <insert id="playerSave" parameterType="com.letskuf.dto.PlayerDTO" useGeneratedKeys="true" keyProperty="playerId">
+        insert into player(
+         name
+        ,birth_date
+        ,team_id
+        ,type_gbn
+        ,position
+        ,uniform_num
+        ,grade
+        ,height
+        ,weight
+        ,file_attached
+        ) values (
+         #{name}
+        ,#{birthDate}
+        ,#{teamId}
+        ,#{typeGbn}
+        ,#{position}
+        ,#{uniformNum}
+        ,#{grade}
+        ,#{height}
+        ,#{weight}
+        ,#{fileAttached}
+        )
+    </insert>
+
+    <!-- 선수 수정 -->
+    <update id="playerUpdate" parameterType="com.letskuf.dto.PlayerDTO">
+        update player
+        set name = #{name},
+            birth_date = #{birthDate},
+            team_id = #{teamId},
+            position = #{position},
+            uniform_num = #{uniformNum},
+            grade = #{grade},
+            height = #{height},
+            weight = #{weight},
+            file_attached = #{fileAttached}
+       where player_id = #{playerId}
+    </update>
+
+    <!-- 선수 삭제 -->
+    <delete id="playerDelete" parameterType="int">
+        delete
+          from player
+         where player_id = #{playerId}
+    </delete>
+
+    <!-- playerFileListMap resultMap 정의 -->
+    <resultMap id="playerFileListMap" type="com.letskuf.dto.PlayerFileDTO">
+        <result property="originalFileName" column="original_file_nm" />
+        <result property="storedFileName" column="stored_file_nm" />
+        <result property="playerId" column="player_id" />
+        <result property="fileId" column="file_id" />
+    </resultMap>
+
+    <!-- 선수 사진 조회 -->
+    <select id="playerFileListByPlayerId" parameterType="int" resultMap="playerFileListMap">
+        select original_file_nm
+             ,stored_file_nm
+             ,player_id
+             ,file_id
+        from player_photo_file
+        where player_id = #{playerId}
+    </select>
+
+    <!-- 선수 사진 등록 -->
+    <insert id="playerFileSave" parameterType="com.letskuf.dto.PlayerFileDTO" useGeneratedKeys="true" keyProperty="fileId">
+        insert into player_photo_file(
+         original_file_nm
+        ,stored_file_nm
+        ,player_id
+        ) values (
+         #{originalFileName}
+        ,#{storedFileName}
+        ,#{playerId})
+    </insert>
+
+    <!-- 선수 사진 삭제 -->
+    <delete id="playerFileDelete" parameterType="int">
+        delete
+          from player_photo_file
+         where file_id = #{fileId}
+    </delete>
+
+    <!-- resultMap 정의 -->
+    <resultMap id="playerListMap" type="com.letskuf.dto.PlayerDTO">
+        <result property="playerId" column="player_id" />
+        <result property="name" column="name" />
+        <result property="birthDate" column="birth_date" />
+        <result property="teamNm" column="team_nm" />
+        <result property="position" column="position" />
+        <result property="uniformNum" column="uniform_num" />
+        <result property="grade" column="grade" />
+        <result property="height" column="height" />
+        <result property="weight" column="weight" />
+    </resultMap>
+
+    <!-- 선수 전체 조회 -->
+    <select id="playerList" parameterType="com.letskuf.dto.PlayerDTO" resultMap="playerListMap">
+        select t.player_id
+              ,t.name
+              ,t.birth_date
+              ,team.team_nm
+              ,t.position
+              ,t.uniform_num
+              ,t.grade
+              ,t.height
+              ,t.weight
+        from (
+        select player_id
+              ,name
+              ,birth_date
+              ,team_id
+              ,position
+              ,uniform_num
+              ,grade
+              ,height
+              ,weight
+          from player
+        order by player_id asc
+        ) t
+        left join team on t.team_id = team.team_id
+        limit #{recordCountPerPage} offset #{firstIndex}
+    </select>
+
+    <!-- 선수 전체 건수 조회-->
+    <select id="playerListCnt" parameterType="com.letskuf.dto.PlayerDTO" resultType="java.lang.Integer">
+        select COUNT(player_id)
+        from player
+    </select>
+
+    <!-- playerDetail resultMap 정의 -->
+<!--    <resultMap id="playerDetailMap" type="com.letskuf.dto.TeamDTO">-->
+<!--        <result property="teamNm" column="team_nm" />-->
+<!--        <result property="address" column="address" />-->
+<!--        &lt;!&ndash; 코치 리스트 매핑 &ndash;&gt;-->
+<!--        <collection property="coaches" ofType="com.letskuf.dto.CoachDTO">-->
+<!--            <result property="name" column="name" />-->
+<!--            <result property="birthDate" column="birth_date" />-->
+<!--            <result property="position" column="coach_position" />-->
+<!--        </collection>-->
+<!--        &lt;!&ndash; 선수 리스트 매핑 &ndash;&gt;-->
+<!--        <collection property="players" ofType="com.letskuf.dto.PlayerDTO">-->
+<!--            <result property="uniformNum" column="uniform_num" />-->
+<!--            <result property="name" column="name" />-->
+<!--            <result property="birthDate" column="birth_date" />-->
+<!--            <result property="position" column="player_position" />-->
+<!--            <result property="grade" column="grade" />-->
+<!--            <result property="height" column="height" />-->
+<!--            <result property="weight" column="weight" />-->
+<!--        </collection>-->
+<!--    </resultMap>-->
+
+    <!-- 선수 상세 조회 -->
+<!--    <select id="playerDetail" parameterType="int" resultMap="playerDetailMap">-->
+<!--        select t.team_nm-->
+<!--             ,t.address-->
+<!--             ,c.name-->
+<!--             ,c.birth_date-->
+<!--             ,c.position as coach_position-->
+<!--             ,p.unifor m_num-->
+<!--             ,p.name-->
+<!--             ,p.birth_date-->
+<!--             ,p.position as player_position-->
+<!--             ,p.grade-->
+<!--             ,p.height-->
+<!--             ,p.weight-->
+<!--        from team t-->
+<!--                 left join-->
+<!--             coach c on t.team_id = c.team_id-->
+<!--                 left join-->
+<!--             player p on t.team_id = p.team_id-->
+<!--        where t.team_id = #{teamId}-->
+<!--    </select>-->
+
+    <!-- playerDetailListMap resultMap 정의 -->
+    <resultMap id="playerDetailListMap" type="com.letskuf.dto.PlayerDTO">
+        <result property="uniformNum" column="uniform_num" />
+        <result property="name" column="name" />
+        <result property="position" column="player_position" />
+        <result property="grade" column="grade" />
+    </resultMap>
+
+    <!-- 선수 상세 조회(teamId에 따른) -->
+    <select id="playerListByTeamId" parameterType="int" resultMap="playerDetailListMap">
+        select p.uniform_num
+              ,p.name
+              ,p.position as player_position
+              ,p.grade
+        from player p
+        where p.team_id = #{teamId}
+        order by p.uniform_num
+    </select>
+
+    <!-- playerDetailMap resultMap 정의 -->
+    <resultMap id="playerDetailMap" type="com.letskuf.dto.PlayerDTO">
+        <result property="name" column="name" />
+    </resultMap>
+
+    <!-- 선수 상세 조회 -->
+    <select id="playerByPlayerId" parameterType="int" resultMap="playerDetailMap">
+        select p.name
+          from player p
+         where p.player_id = #{playerId}
+    </select>
+
+    <!-- playerDetailUpdateMap 정의 -->
+    <resultMap id="playerDetailUpdateMap" type="com.letskuf.dto.PlayerDTO">
+        <result property="playerId" column="player_id" />
+        <result property="name" column="name" />
+        <result property="birthDate" column="birth_date" />
+        <result property="teamId" column="team_id" />
+        <result property="typeGbn" column="type_gbn" />
+        <result property="position" column="position" />
+        <result property="uniformNum" column="uniform_num" />
+        <result property="grade" column="grade" />
+        <result property="height" column="height" />
+        <result property="weight" column="weight" />
+    </resultMap>
+
+    <!-- 선수 상세 조회 (수정용) -->
+    <select id="playerUpdateListByPlayerId" parameterType="int" resultMap="playerDetailUpdateMap">
+        select t.player_id
+              ,t.name
+              ,t.birth_date
+              ,team.team_id
+              ,t.type_gbn
+              ,t.position
+              ,t.uniform_num
+              ,t.grade
+              ,t.height
+              ,t.weight
+         from (
+                 select player_id
+                      ,name
+                      ,birth_date
+                      ,team_id
+                      ,type_gbn
+                      ,position
+                      ,uniform_num
+                      ,grade
+                      ,height
+                      ,weight
+                 from player
+                where player_id = #{playerId}
+             ) t
+                 left join team on t.team_id = team.team_id
+    </select>
+
+    <!-- playerFileUpdateMap 정의 -->
+    <resultMap id="playerFileUpdateMap" type="com.letskuf.dto.PlayerFileDTO">
+        <result property="originalFileName" column="original_file_nm" />
+        <result property="storedFileName" column="stored_file_nm" />
+    </resultMap>
+
+    <!-- 선수 사진 조회 (수정용) -->
+    <select id="playerFileUpdateListByPlayerId" parameterType="int" resultMap="playerFileUpdateMap">
+        select p.original_file_nm
+              ,p.stored_file_nm
+        from player_photo_file p
+        where p.player_id = #{playerId}
+    </select>
+
+</mapper>

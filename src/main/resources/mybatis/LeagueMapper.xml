@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="League">
+    <!-- 리그/대회 등록 -->
+    <insert id="leagueSave" parameterType="com.letskuf.dto.LeagueDTO" useGeneratedKeys="true" keyProperty="leagueId">
+        insert into league_tournament(
+                            type
+                           ,name
+                           ,region
+                           ,start_date
+                           ,end_date
+        ) values (
+                  #{type}
+                 ,#{name}
+                 ,#{region}
+                 ,#{startDate}
+                 ,#{endDate}
+                 )
+    </insert>
+
+    <!-- 리그/대회 수정 -->
+    <update id="leagueUpdate" parameterType="com.letskuf.dto.LeagueDTO">
+        update league_tournament
+        set name = #{name},
+            start_date = #{startDate},
+            end_date = #{endDate},
+            region = #{region}
+        where league_id = #{leagueId}
+    </update>
+
+    <!-- 리그/대회 삭제 -->
+    <delete id="leagueDelete" parameterType="int">
+        delete
+          from league_tournament
+         where league_id = #{leagueId}
+    </delete>
+
+    <!-- 리그/대회 전체 건수 조회-->
+    <select id="leagueListCnt" parameterType="com.letskuf.dto.LeagueDTO" resultType="java.lang.Integer">
+        select COUNT(league_id)
+        from league_tournament
+        where type = #{type}
+    </select>
+
+    <!-- resultMap 정의 -->
+    <resultMap id="leagueListMap" type="com.letskuf.dto.LeagueDTO">
+        <result property="no" column="no" />
+        <result property="leagueId" column="league_id" />
+        <result property="name" column="name" />
+        <result property="region" column="region" />
+        <result property="startDate" column="start_date" />
+        <result property="endDate" column="end_date" />
+    </resultMap>
+
+    <!-- 리그/대회 전체 조회 -->
+    <select id="leagueList" parameterType="com.letskuf.dto.LeagueDTO" resultMap="leagueListMap">
+        select ROW_NUMBER() OVER (ORDER BY league_id ASC) AS no
+              ,t.league_id
+              ,t.name
+              ,t.region
+              ,t.start_date
+              ,t.end_date
+        from (
+             select league_id
+                   ,name
+                   ,region
+                   ,start_date
+                   ,end_date
+             from league_tournament
+             where type = #{type}
+             order by league_id asc
+         ) t
+        limit #{recordCountPerPage} offset #{firstIndex}
+    </select>
+
+    <!-- leagueDetailMap resultMap 정의 -->
+    <resultMap id="leagueDetailMap" type="com.letskuf.dto.LeagueDTO">
+        <result property="leagueId" column="league_id" />
+        <result property="name" column="name" />
+        <result property="region" column="region" />
+        <result property="startDate" column="start_date" />
+        <result property="endDate" column="end_date" />
+    </resultMap>
+
+    <!-- 리그/대회 상세 조회 -->
+    <select id="leagueByLeagueId" parameterType="int" resultMap="leagueDetailMap">
+        select l.league_id
+              ,l.name
+              ,l.region
+              ,l.start_date
+              ,l.end_date
+          from league_tournament l
+         where l.league_id = #{leagueId}
+    </select>
+
+</mapper>
