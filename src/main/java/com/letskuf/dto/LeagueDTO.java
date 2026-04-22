@@ -12,6 +12,7 @@ import java.time.LocalDate;
 public class LeagueDTO {
     private int no;
     private int leagueId;
+    private int venueId;
     private LeagueType type;
     private String name;
     private String region;

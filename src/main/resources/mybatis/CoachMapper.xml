@@ -10,7 +10,7 @@
         ,birth_date
         ,team_id
         ,type_gbn
-        ,title
+        ,position
         ,file_attached
         ) values (
          #{name}
@@ -27,7 +27,7 @@
         update coach
         set name = #{name},
             birth_date = #{birthDate},
-            title = #{title},
+            position = #{title},
             file_attached = #{fileAttached}
         where coach_id = #{coachId}
     </update>
@@ -82,7 +82,7 @@
         <result property="name" column="name" />
         <result property="birthDate" column="birth_date" />
         <result property="teamNm" column="team_nm" />
-        <result property="title" column="title" />
+        <result property="position" column="position" />
     </resultMap>
 
     <!-- 코칭스태프/임원 전체 조회 -->
@@ -91,14 +91,14 @@
               ,c.name
               ,c.birth_date
               ,t.team_nm
-              ,c.title
+              ,c.position
         from (
         select
          coach_id
         ,name
         ,birth_date
         ,team_id
-        ,title
+        ,position
         from coach
         order by coach_id asc
         ) c
@@ -115,14 +115,14 @@
     <!-- coachDetailListMap resultMap 정의 -->
     <resultMap id="coachDetailListMap" type="com.letskuf.dto.CoachDTO">
         <result property="name" column="name" />
-        <result property="title" column="title" />
+        <result property="position" column="position" />
         <result property="typeGbn" column="type_gbn" />
     </resultMap>
 
     <!-- 코칭스태프/임원 상세 조회(teamId에 따른) -->
     <select id="coachListByTeamId" parameterType="int" resultMap="coachDetailListMap">
         select c.name
-              ,c.title
+              ,c.position
               ,c.type_gbn
         from coach c
         where c.team_id = #{teamId}
@@ -147,7 +147,7 @@
         <result property="birthDate" column="birth_date" />
         <result property="teamId" column="team_id" />
         <result property="typeGbn" column="type_gbn" />
-        <result property="title" column="title" />
+        <result property="position" column="position" />
     </resultMap>
 
     <!-- 코칭스태프/임원 상세 조회 (수정용) -->
@@ -155,16 +155,16 @@
         select c.coach_id
               ,c.name
               ,c.birth_date
-              ,team.team_id
+              ,c.team_id
               ,c.type_gbn
-              ,c.title
+              ,c.position
         from (
                  select coach_id
                       ,name
                       ,birth_date
                       ,team_id
                       ,type_gbn
-                      ,title
+                      ,position
                  from coach
                  where coach_id = #{coachId}
              ) c

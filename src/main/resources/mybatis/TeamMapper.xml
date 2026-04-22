@@ -103,21 +103,20 @@
           ) t
           left join coach c
               on t.team_id = c.team_id
-              and c.title = '감독'
+              and c.position = '감독'
         limit #{recordCountPerPage} offset #{firstIndex}
     </select>
 
     <!-- 팀 전체 건수 조회 -->
     <select id="teamListCnt" parameterType="com.letskuf.dto.TeamDTO" resultType="java.lang.Integer">
         select COUNT(team_id)
-        from team
+          from team
     </select>
 
     <!-- 팀 목록 조회 -->
     <select id="teamListAll" parameterType="com.letskuf.dto.TeamDTO" resultMap="teamListMap">
         select  team_id
                 ,team_nm
-                ,region_nm
           from team
       order by team_id desc
     </select>

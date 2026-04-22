@@ -3,7 +3,6 @@ package com.letskuf.dto;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -11,22 +10,22 @@ import java.util.List;
 @Getter
 @Setter
 @ToString
-public class PlayerDTO {
-    private int no;
-    private int playerId;
-    private String name;
-    private LocalDate birthDate;
-    private int teamId;
-    private String typeGbn;
-    private String teamNm;
-    private String position;
-    private int uniformNum;
-    private int grade;
-    private int height;
-    private int weight;
-    private int joinYear;
-    private int fileAttached;
-    private List<MultipartFile> file;
+public class MatchDTO {
+    private int matchId;
+    private int leagueId;
+    private String leagueNm;
+    private int venueId;
+    private String venueNm;
+    private int homeTeamId;
+    private String homeTeamNm;
+    private int awayTeamId;
+    private String awayTeamNm;
+    private LocalDate matchDate;
+    private String kickoffTime;
+    private int homeScore;
+    private int awayScore;
+    private List<MatchUniformDTO> uniformList;
+    private matchStatusType status;
     private String createdAt;
 
     private int pageIndex = 1; // 현재페이지

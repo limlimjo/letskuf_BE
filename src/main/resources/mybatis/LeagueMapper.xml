@@ -23,11 +23,11 @@
     <!-- 리그/대회 수정 -->
     <update id="leagueUpdate" parameterType="com.letskuf.dto.LeagueDTO">
         update league_tournament
-        set name = #{name},
-            start_date = #{startDate},
-            end_date = #{endDate},
-            region = #{region}
-        where league_id = #{leagueId}
+           set name = #{name},
+               start_date = #{startDate},
+               end_date = #{endDate},
+               region = #{region}
+         where league_id = #{leagueId}
     </update>
 
     <!-- 리그/대회 삭제 -->
@@ -39,9 +39,9 @@
 
     <!-- 리그/대회 전체 건수 조회-->
     <select id="leagueListCnt" parameterType="com.letskuf.dto.LeagueDTO" resultType="java.lang.Integer">
-        select COUNT(league_id)
-        from league_tournament
-        where type = #{type}
+        select COUNT(*)
+          from league_tournament
+         where type = #{type}
     </select>
 
     <!-- resultMap 정의 -->
@@ -75,6 +75,15 @@
         limit #{recordCountPerPage} offset #{firstIndex}
     </select>
 
+    <!-- 리그/대회 목록 조회 -->
+    <select id="leagueListAll" parameterType="com.letskuf.dto.LeagueDTO" resultMap="leagueListMap">
+        select league_id
+               ,name
+          from league_tournament
+         where type = #{type}
+         order by league_id desc
+    </select>
+
     <!-- leagueDetailMap resultMap 정의 -->
     <resultMap id="leagueDetailMap" type="com.letskuf.dto.LeagueDTO">
         <result property="leagueId" column="league_id" />
@@ -95,4 +104,63 @@
          where l.league_id = #{leagueId}
     </select>
 
+    <!-- resultMap 정의 -->
+    <resultMap id="leagueVenueListMap" type="com.letskuf.dto.LeagueVenueDTO">
+        <result property="venueId" column="venue_id" />
+        <result property="name" column="name" />
+        <result property="address" column="address" />
+    </resultMap>
+
+    <!-- 리그/대회 경기장 조회 -->
+    <select id="leagueVenueList" parameterType="com.letskuf.dto.LeagueVenueDTO" resultMap="leagueVenueListMap">
+        select
+            v.venue_id,
+            v.name,
+            v.address
+          from league_venue lv
+          join venue v
+            on lv.venue_id = v.venue_id
+         where lv.league_id = #{leagueId}
+    </select>
+
+    <!-- 리그/대회 경기장 전체 건수 조회-->
+    <select id="leagueVenueListCnt" parameterType="com.letskuf.dto.LeagueVenueDTO" resultType="java.lang.Integer">
+        select COUNT(*)
+          from league_venue lv
+          join venue v
+            on lv.venue_id = v.venue_id
+         where lv.league_id = #{leagueId}
+    </select>
+
+    <!-- 리그/대회 경기장 상세 조회 -->
+    <select id="leagueVenueDetailList" parameterType="com.letskuf.dto.LeagueVenueDTO" resultMap="leagueVenueListMap">
+        select
+        v.venue_id,
+        v.name,
+        v.address
+        from league_venue lv
+        join venue v
+        on lv.venue_id = v.venue_id
+        where lv.league_id = #{leagueId}
+    </select>
+
+    <!-- 리그/대회 경기장 추가 -->
+    <insert id="leagueVenueSave" parameterType="com.letskuf.dto.LeagueVenueDTO" useGeneratedKeys="true" keyProperty="leagueVenueId">
+        insert into league_venue (
+            league_id,
+            venue_id
+        )
+        values (
+            #{leagueId},
+            #{venueId}
+        )
+    </insert>
+
+    <!-- 리그/대회 경기장 삭제 -->
+    <delete id="leagueVenueDelete" parameterType="com.letskuf.dto.LeagueVenueDTO">
+        delete
+          from league_venue
+         where league_id = #{leagueId}
+           and venue_id = #{venueId}
+    </delete>
 </mapper>

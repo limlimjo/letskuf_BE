@@ -26,7 +26,7 @@ public class CoachAPIController {
     /* TODO: 한 대학교에 한 명의 감독만 등록될 수 있게 체크 필요 */
     /** 선수단 (코칭스태프/임원) 등록 처리**/
     @PostMapping("/registerCoach.do")
-    public ResultVO registerCoach(@ModelAttribute("coachDTO") CoachDTO coachDTO) throws IOException {
+    public ResultVO registerCoach(@ModelAttribute CoachDTO coachDTO) throws IOException {
 
         ResultVO resultVO = new ResultVO();
 
@@ -46,7 +46,7 @@ public class CoachAPIController {
 
     /** 선수단 (코칭스태프/임원) 수정 처리 **/
     @PostMapping("/updateCoach.do")
-    public ResultVO updateCoach(@ModelAttribute("coachDTO") CoachDTO coachDTO) throws Exception {
+    public ResultVO updateCoach(@ModelAttribute CoachDTO coachDTO) throws Exception {
 
         ResultVO resultVO = new ResultVO();
 
@@ -81,7 +81,7 @@ public class CoachAPIController {
 
     /** 선수단 (코칭스태프/임원) 전체 조회 **/
     @GetMapping("/retrieveCoach.do")
-    public ResultVO retrieveCoach(@ModelAttribute("coachDTO") CoachDTO coachDTO, Model model) throws Exception {
+    public ResultVO retrieveCoach(CoachDTO coachDTO, Model model) throws Exception {
 
         ResultVO resultVO = new ResultVO();
 

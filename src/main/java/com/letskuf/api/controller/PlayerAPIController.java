@@ -25,7 +25,7 @@ public class PlayerAPIController {
 
     /** 선수단 (선수) 등록 처리 **/
     @PostMapping("/registerPlayer.do")
-    public ResultVO registerPlayer(@ModelAttribute("playerDTO") PlayerDTO playerDTO) throws IOException {
+    public ResultVO registerPlayer(@ModelAttribute PlayerDTO playerDTO) throws IOException {
 
         ResultVO resultVO = new ResultVO();
 
@@ -45,7 +45,7 @@ public class PlayerAPIController {
 
     /** 선수단(선수) 수정 처리 **/
     @PostMapping("/updatePlayer.do")
-    public ResultVO updatePlayer(@ModelAttribute("playerDTO") PlayerDTO playerDTO) throws Exception {
+    public ResultVO updatePlayer(@ModelAttribute PlayerDTO playerDTO) throws Exception {
 
         ResultVO resultVO = new ResultVO();
 
@@ -80,7 +80,7 @@ public class PlayerAPIController {
 
     /** 선수단 (선수) 전체 조회 **/
     @GetMapping("/retrievePlayer.do")
-    public ResultVO retrievePlayer(@ModelAttribute("playerDTO") PlayerDTO playerDTO, Model model) throws Exception {
+    public ResultVO retrievePlayer(PlayerDTO playerDTO) throws Exception {
 
         ResultVO resultVO = new ResultVO();
 

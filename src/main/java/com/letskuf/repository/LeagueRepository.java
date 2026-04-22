@@ -1,6 +1,7 @@
 package com.letskuf.repository;
 
 import com.letskuf.dto.LeagueDTO;
+import com.letskuf.dto.LeagueVenueDTO;
 import lombok.RequiredArgsConstructor;
 import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.stereotype.Repository;
@@ -38,9 +39,33 @@ public class LeagueRepository {
         return sql.selectOne("League.leagueListCnt", leagueDTO);
     }
 
+    /* 리그/대회 목록 조회 */
+    public List<LeagueDTO> selectLeagueList(LeagueDTO leagueDTO) {
+        return sql.selectList("League.leagueListAll", leagueDTO);
+    }
+
     /* 리그/대회 상세 조회 */
     public LeagueDTO selectLeagueById(int leagueId) {
         return sql.selectOne("League.leagueByLeagueId", leagueId);
     }
 
+    /* 리그/대회 경기장 조회 */
+    public List<LeagueVenueDTO> selectLeagueVenueList(int leagueId) {
+        return sql.selectList("League.leagueVenueList", leagueId);
+    }
+
+    /* 리그/대회 경기장 전체 건수 조회 */
+    public int selectLeagueVenueCnt(int leagueId) {
+        return sql.selectOne("League.leagueVenueListCnt", leagueId);
+    }
+
+    /* 리그/대회 경기장 추가 */
+    public void saveLeagueVenue(LeagueVenueDTO leagueVenueDTO) {
+        sql.insert("League.leagueVenueSave", leagueVenueDTO);
+    }
+
+    /* 리그/대회 경기장 삭제 */
+    public void deleteLeagueVenue(LeagueVenueDTO leagueVenueDTO) {
+        sql.delete("League.leagueVenueDelete", leagueVenueDTO);
+    }
 }

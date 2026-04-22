@@ -24,7 +24,7 @@ public class TeamAPIController {
 
     /**  팀 등록 처리 **/
     @PostMapping("/registerTeam.do")
-    public ResultVO registerTeam(@ModelAttribute("teamDTO") TeamDTO teamDTO) throws Exception {
+    public ResultVO registerTeam(@ModelAttribute TeamDTO teamDTO) throws Exception {
 
         ResultVO resultVO = new ResultVO();
 
@@ -44,7 +44,7 @@ public class TeamAPIController {
 
     /** 팀 수정 처리 **/
     @PostMapping("/updateTeam.do")
-    public ResultVO updateTeam(@ModelAttribute("teamDTO") TeamDTO teamDTO) throws Exception {
+    public ResultVO updateTeam(@ModelAttribute TeamDTO teamDTO) throws Exception {
 
         ResultVO resultVO = new ResultVO();
 
@@ -79,7 +79,7 @@ public class TeamAPIController {
 
     /** 팀 전체 조회 **/
     @GetMapping("/retrieveTeam.do")
-    public ResultVO retrieveTeam(@ModelAttribute("teamDTO") TeamDTO teamDTO, Model model) throws Exception {
+    public ResultVO retrieveTeam(TeamDTO teamDTO) throws Exception {
 
         ResultVO resultVO = new ResultVO();
 
@@ -111,7 +111,7 @@ public class TeamAPIController {
 
     /** 팀 목록 조회 **/
     @GetMapping("/retrieveTeamList.do")
-    public ResultVO retrieveTeamList(@ModelAttribute("teamDTO") TeamDTO teamDTO) throws Exception {
+    public ResultVO retrieveTeamList(TeamDTO teamDTO) throws Exception {
         ResultVO resultVO = new ResultVO();
 
         Map<String, Object> resultMap = teamService.retrieveTeamsList(teamDTO);
@@ -150,5 +150,4 @@ public class TeamAPIController {
 
         return resultVO;
     }
-
 }

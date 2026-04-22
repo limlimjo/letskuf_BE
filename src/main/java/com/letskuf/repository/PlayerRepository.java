@@ -16,9 +16,13 @@ public class PlayerRepository {
     private final SqlSessionTemplate sql;
 
     /* 선수 등록 */
-    public PlayerDTO save(PlayerDTO playerDTO) {
+    public void save(PlayerDTO playerDTO) {
         sql.insert("Player.playerSave", playerDTO);
-        return playerDTO;
+    }
+
+    /* 선수-팀 등록 */
+    public void savePlayerTeam(PlayerDTO playerDTO) {
+        sql.insert("Player.playerTeamSave", playerDTO);
     }
 
     /* 선수 수정 */
@@ -26,9 +30,19 @@ public class PlayerRepository {
         sql.update("Player.playerUpdate", playerDTO);
     }
 
+    /* 선수-팀 수정 */
+    public void updatePlayerTeam(PlayerDTO playerDTO) {
+        sql.update("Player.playerTeamUpdate", playerDTO);
+    }
+
     /* 선수 삭제 */
     public void delete(int playerId) {
         sql.delete("Player.playerDelete", playerId);
+    }
+
+    /* 선수-팀 삭제 */
+    public void deletePlayerTeam(int playerId) {
+        sql.delete("Player.playerTeamDelte", playerId);
     }
 
     /* 선수 사진 조회 */

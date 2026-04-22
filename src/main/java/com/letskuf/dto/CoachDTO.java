@@ -19,6 +19,7 @@ public class CoachDTO {
     private int teamId;
     private String typeGbn;
     private String teamNm;
+    private String position;
     private String title;
     private int fileAttached;
     private List<MultipartFile> file;

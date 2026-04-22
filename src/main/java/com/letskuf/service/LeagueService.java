@@ -1,14 +1,15 @@
 package com.letskuf.service;
 
 import com.letskuf.dto.LeagueDTO;
+import com.letskuf.dto.LeagueVenueDTO;
 import com.letskuf.repository.LeagueRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.GetMapping;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -63,6 +64,18 @@ public class LeagueService {
         return map;
     }
 
+    /* 리그/대회 목록 조회 */
+    public Map<String, Object> retrieveLeagueList(LeagueDTO leagueDTO) throws Exception {
+
+        Map<String, Object> map = new HashMap<>();
+
+        List<LeagueDTO> list = leagueRepository.selectLeagueList(leagueDTO);
+
+        map.put("resultList", list);
+
+        return map;
+    }
+
     /* 리그/대회 상세 조회 */
     public Map<String, Object> retrieveLeagueById(int leagueId) throws Exception {
 
@@ -70,8 +83,45 @@ public class LeagueService {
 
         // 리그/대회 정보
         LeagueDTO league = leagueRepository.selectLeagueById(leagueId);
+        // 경기장 정보
+        List<LeagueVenueDTO> venue = leagueRepository.selectLeagueVenueList(leagueId);
+        int cnt = leagueRepository.selectLeagueVenueCnt(leagueId);
 
         map.put("league", league);
+        map.put("venue", venue);
+        map.put("venueCnt", Integer.toString(cnt));
+
+        return map;
+    }
+
+    /* 리그/대회 경기장 추가 */
+    @Transactional(rollbackFor = Exception.class)
+    public void registerLeagueVenue(LeagueVenueDTO leagueVenueDTO) throws Exception {
+        try {
+            leagueRepository.saveLeagueVenue(leagueVenueDTO);
+        } catch (DuplicateKeyException e) {
+            throw new RuntimeException("이미 등록된 경기장입니다.");
+        }
+    }
+
+    /* 리그/대회 경기장 삭제 */
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteLeagueVenue(LeagueVenueDTO leagueVenueDTO) throws Exception {
+        leagueRepository.deleteLeagueVenue(leagueVenueDTO);
+    }
+
+    /** 리그/대회 경기장 상세 조회 **/
+    /* 리그/대회 상세 조회 */
+    public Map<String, Object> retrieveLeagueVenueById(int leagueId) throws Exception {
+
+        Map<String, Object> map = new HashMap<>();
+
+        // 경기장 정보
+        List<LeagueVenueDTO> venue = leagueRepository.selectLeagueVenueList(leagueId);
+        int cnt = leagueRepository.selectLeagueVenueCnt(leagueId);
+
+        map.put("venue", venue);
+        map.put("venueCnt", Integer.toString(cnt));
 
         return map;
     }

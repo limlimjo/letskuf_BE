@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="Venue">
+    <!-- 경기장소 등록 -->
+    <insert id="venueSave" parameterType="com.letskuf.dto.VenueDTO" useGeneratedKeys="true" keyProperty="venueId">
+        insert into venue(
+            name
+           ,postcode
+           ,address
+           ,address_detail
+        )
+        values (
+            #{venueNm}
+           ,#{postcode}
+           ,#{address}
+           ,#{detailAddress}
+        )
+    </insert>
+
+    <!-- 경기장소 중복 체크 -->
+    <select id="countByNameAndAddress" parameterType="com.letskuf.dto.VenueDTO" resultType="java.lang.Integer">
+        select count(*)
+          from venue
+         where name = #{venueNm}
+           and address = #{address}
+    </select>
+
+    <!-- 경기장소 수정 -->
+    <update id="venueUpdate" parameterType="com.letskuf.dto.VenueDTO">
+        update venue
+        set name = #{venueNm},
+            postcode = #{postcode},
+            address = #{address},
+            address_detail = #{detailAddress}
+        where venue_id = #{venueId}
+    </update>
+
+    <!-- 경기장소 삭제 -->
+    <delete id="venueDelete" parameterType="int">
+        delete
+          from venue
+         where venue_id = #{venueId}
+    </delete>
+
+    <!-- 경기장소 전체 건수 조회 -->
+    <select id="venueListCnt" resultType="java.lang.Integer">
+        select COUNT(*)
+          from venue
+    </select>
+
+    <!-- resultMap 정의 -->
+    <resultMap id="venueListMap" type="com.letskuf.dto.VenueDTO">
+        <result property="no" column="no" />
+        <result property="venueId" column="venue_id" />
+        <result property="venueNm" column="name" />
+        <result property="postcode" column="postcode" />
+        <result property="address" column="address" />
+        <result property="detailAddress" column="address_detail" />
+    </resultMap>
+
+    <!-- 경기장소 전체 조회 -->
+    <select id="venueList" parameterType="com.letskuf.dto.VenueDTO" resultMap="venueListMap">
+        select ROW_NUMBER() OVER (ORDER BY venue_id ASC) AS no
+        ,venue_id
+        ,name
+        ,postcode
+        ,address
+        ,address_detail
+        from venue
+        order by venue_id asc
+        limit #{recordCountPerPage} offset #{firstIndex}
+    </select>
+
+    <!-- resultMap 정의 -->
+    <resultMap id="venueDetailMap" type="com.letskuf.dto.VenueDTO">
+        <result property="venueId" column="venue_id" />
+        <result property="venueNm" column="name" />
+        <result property="postcode" column="postcode" />
+        <result property="address" column="address" />
+        <result property="detailAddress" column="address_detail" />
+    </resultMap>
+
+    <!-- 경기장소 상세 조회 -->
+    <select id="venueByVenueId" parameterType="int" resultMap="venueDetailMap">
+        select v.venue_id
+        ,v.name
+        ,v.postcode
+        ,v.address
+        ,v.address_detail
+        from venue v
+        where v.venue_id = #{venueId}
+    </select>
+
+    <!-- resultMap 정의 -->
+    <resultMap id="searchVenueMap" type="com.letskuf.dto.VenueDTO">
+        <result property="no" column="no" />
+        <result property="venueId" column="venue_id" />
+        <result property="venueNm" column="name" />
+        <result property="postcode" column="postcode" />
+        <result property="address" column="address" />
+        <result property="detailAddress" column="address_detail" />
+    </resultMap>
+
+    <!-- 경기장소 검색 -->
+    <select id="searchVenue" parameterType="com.letskuf.dto.VenueDTO" resultMap="searchVenueMap">
+        select ROW_NUMBER() OVER (ORDER BY venue_id ASC) AS no
+        ,venue_id
+        ,name
+        ,address
+        from venue
+        where 1=1
+        <if test="keyword != null and keyword != ''">
+            and (
+            name like concat('%', #{keyword}, '%')
+            or address like concat('%', #{keyword}, '%')
+            )
+        </if>
+        order by venue_id asc
+        limit #{recordCountPerPage} offset #{firstIndex}
+    </select>
+
+    <!-- 경기장소 검색 건수 조회 -->
+    <select id="searchVenueCnt" parameterType="com.letskuf.dto.VenueDTO" resultType="java.lang.Integer">
+        select COUNT(*)
+        from venue
+        where 1=1
+        <if test="keyword != null and keyword != ''">
+            and (
+            name like concat('%', #{keyword}, '%')
+            or address like concat('%', #{keyword}, '%')
+            )
+        </if>
+    </select>
+</mapper>

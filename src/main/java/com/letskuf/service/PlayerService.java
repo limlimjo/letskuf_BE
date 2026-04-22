@@ -28,50 +28,55 @@ public class PlayerService {
     /* 선수 등록 */
     @Transactional(rollbackFor = Exception.class) // 모든 예외 발생 시 롤백
     public void registerPlayer(PlayerDTO playerDTO) throws IOException {
-        // 파일이 없을 때
+
+        // 파일 여부 체크
         if (playerDTO.getFile().get(0).isEmpty()) {
-            // fileAttached 값 0으로 설정하고 저장
             playerDTO.setFileAttached(0);
-            playerRepository.save(playerDTO);
-            log.info("선수 정보 저장(파일x): {}", playerDTO);
-        }
-        // 파일이 있을 때
-        else {
-            // fileAttached 값 1로 설정하고 저장
+        } else {
             playerDTO.setFileAttached(1);
-            PlayerDTO savedPlayer = playerRepository.save(playerDTO);
-            log.info("선수 정보 저장(파일o): {}", playerDTO);
-            // 파일만 따로 가져오기
-            for (MultipartFile playerFile: playerDTO.getFile()) {
-                // 파일 이름 가져오기
-                String originalFileName = playerFile.getOriginalFilename();
-                // 저장용 이름 만들기
-                String storedFileName = System.currentTimeMillis() + "-" + originalFileName;
-                // PlayerFileDTO 세팅 (originalFileName, storedFileName, playerId)
-                PlayerFileDTO playerFileDTO = new PlayerFileDTO();
-                playerFileDTO.setOriginalFileName(originalFileName);
-                playerFileDTO.setStoredFileName(storedFileName);
-                playerFileDTO.setPlayerId(savedPlayer.getPlayerId());
-                // 파일 저장용 폴더에 파일 저장 처리
-                String savePath = "/Users/selimjo/Desktop/letskuf_pic/player/";
-                String storedFilePath = savePath + storedFileName;
+        }
 
-                // 파일 저장용 폴더 없는 경우 폴더 생성
-                Path directoryPath = Paths.get(savePath);
-                if (!Files.exists(directoryPath)) {
-                    try {
-                        Files.createDirectories(directoryPath);
-                        log.info("폴더 생성 완료: " + savePath);
-                    } catch (IOException e) {
-                        log.error("파일 저장 폴더 생성 실패: " + savePath, e);
-                        throw new IOException("파일 저장 폴더 생성에 실패하였습니다.", e);
-                    }
+        // player 저장
+        playerRepository.save(playerDTO);
+
+        // player_team 저장
+        playerRepository.savePlayerTeam(playerDTO);
+
+        // 파일 저장
+        if (playerDTO.getFile().get(0).isEmpty()) {
+            return;
+        }
+
+        // 파일만 따로 가져오기
+        for (MultipartFile playerFile: playerDTO.getFile()) {
+            // 파일 이름 가져오기
+            String originalFileName = playerFile.getOriginalFilename();
+            // 저장용 이름 만들기
+            String storedFileName = System.currentTimeMillis() + "-" + originalFileName;
+            // PlayerFileDTO 세팅 (originalFileName, storedFileName, playerId)
+            PlayerFileDTO playerFileDTO = new PlayerFileDTO();
+            playerFileDTO.setOriginalFileName(originalFileName);
+            playerFileDTO.setStoredFileName(storedFileName);
+            playerFileDTO.setPlayerId(playerDTO.getPlayerId());
+            // 파일 저장용 폴더에 파일 저장 처리
+            String savePath = "/Users/selimjo/Desktop/letskuf_pic/player/";
+            String storedFilePath = savePath + storedFileName;
+
+            // 파일 저장용 폴더 없는 경우 폴더 생성
+            Path directoryPath = Paths.get(savePath);
+            if (!Files.exists(directoryPath)) {
+                try {
+                    Files.createDirectories(directoryPath);
+                    log.info("폴더 생성 완료: " + savePath);
+                } catch (IOException e) {
+                    log.error("파일 저장 폴더 생성 실패: " + savePath, e);
+                    throw new IOException("파일 저장 폴더 생성에 실패하였습니다.", e);
                 }
-
-                playerFile.transferTo(new File(storedFilePath));
-                // player_file 테이블에 저장
-                playerRepository.saveFile(playerFileDTO);
             }
+
+            playerFile.transferTo(new File(storedFilePath));
+            // player_file 테이블에 저장
+            playerRepository.saveFile(playerFileDTO);
         }
     }
 
@@ -132,6 +137,7 @@ public class PlayerService {
         }
         // 선수 정보 수정
         playerRepository.update(playerDTO);
+        playerRepository.updatePlayerTeam(playerDTO);
     }
 
     /* 선수 삭제 */
@@ -152,6 +158,7 @@ public class PlayerService {
         }
 
         playerRepository.delete(playerId);
+        playerRepository.deletePlayerTeam(playerId);
     }
 
     /* 선수 전체 조회 */

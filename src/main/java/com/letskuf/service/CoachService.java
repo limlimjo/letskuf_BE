@@ -24,6 +24,7 @@ import java.util.Map;
 @Service
 @RequiredArgsConstructor
 public class CoachService {
+
     /* 사용할 서비스 주입 */
     private final CoachRepository coachRepository;
 

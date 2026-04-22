@@ -3,6 +3,7 @@ package com.letskuf.api.controller;
 import com.letskuf.api.dto.ResultVO;
 import com.letskuf.common.PaginationInfo;
 import com.letskuf.dto.LeagueDTO;
+import com.letskuf.dto.LeagueVenueDTO;
 import com.letskuf.service.LeagueService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,7 +23,7 @@ public class LeagueAPIController {
 
     /** 리그/대회 등록 처리 **/
     @PostMapping("/registerLeague.do")
-    public ResultVO registerLeague(@ModelAttribute("leagueDTO") LeagueDTO leagueDTO) throws Exception {
+    public ResultVO registerLeague(@RequestBody LeagueDTO leagueDTO) throws Exception {
 
         ResultVO resultVO = new ResultVO();
 
@@ -69,7 +70,7 @@ public class LeagueAPIController {
 
     /** 리그/대회 전체 조회 **/
     @GetMapping("/retrieveLeague.do")
-    public ResultVO retrieveLeague(@ModelAttribute("leagueDTO") LeagueDTO leagueDTO) throws Exception {
+    public ResultVO retrieveLeague(LeagueDTO leagueDTO) throws Exception {
 
         ResultVO resultVO = new ResultVO();
 
@@ -99,6 +100,20 @@ public class LeagueAPIController {
         return resultVO;
     }
 
+    /** 리그/대회 목록 조회 **/
+    @GetMapping("/retrieveLeagueList.do")
+    public ResultVO retrieveLeagueList(LeagueDTO leagueDTO) throws Exception {
+        ResultVO resultVO = new ResultVO();
+
+        Map<String, Object> resultMap = leagueService.retrieveLeagueList(leagueDTO);
+
+        resultVO.setResult(resultMap);
+        resultVO.setResultCode(200);
+        resultVO.setResultMessage("성공했습니다.");
+
+        return resultVO;
+    }
+
     /** 리그/대회 상세 조회 **/
     @GetMapping("/retrieveLeagueDetail.do")
     public ResultVO retrieveLeagueDetail(@RequestParam("leagueId") int leagueId) throws Exception {
@@ -113,4 +128,45 @@ public class LeagueAPIController {
         return resultVO;
     }
 
+    /** 리그/대회 경기장 추가 **/
+    @PostMapping("/registerLeagueVenue.do")
+    public ResultVO registerLeagueVenue(@RequestBody LeagueVenueDTO leagueVenueDTO) throws Exception {
+
+        ResultVO resultVO = new ResultVO();
+
+        leagueService.registerLeagueVenue(leagueVenueDTO);
+
+        resultVO.setResultCode(200);
+        resultVO.setResultMessage("성공했습니다.");
+
+        return resultVO;
+    }
+
+    /** 리그/대회 경기장 삭제 **/
+    @PostMapping("/deleteLeagueVenue.do")
+    public ResultVO deleteLeagueVenue(@RequestBody LeagueVenueDTO leagueVenueDTO) throws Exception {
+
+        ResultVO resultVO = new ResultVO();
+
+        leagueService.deleteLeagueVenue(leagueVenueDTO);
+
+        resultVO.setResultCode(200);
+        resultVO.setResultMessage("성공했습니다.");
+
+        return resultVO;
+    }
+
+    /** 리그/대회 경기장 상세 조회 **/
+    @GetMapping("/retrieveLeagueVenue.do")
+    public ResultVO retrieveLeagueVenue(@RequestParam("leagueId") int leagueId) throws Exception {
+        ResultVO resultVO = new ResultVO();
+
+        Map<String, Object> resultMap = leagueService.retrieveLeagueById(leagueId);
+
+        resultVO.setResult(resultMap);
+        resultVO.setResultCode(200);
+        resultVO.setResultMessage("성공했습니다.");
+
+        return resultVO;
+    }
 }
