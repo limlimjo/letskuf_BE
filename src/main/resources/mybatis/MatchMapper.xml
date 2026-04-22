@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="Match">
+    <!-- 경기 등록 -->
+    <insert id="matchSave" parameterType="com.letskuf.dto.MatchDTO" useGeneratedKeys="true" keyProperty="matchId">
+        insert into match_game(
+            league_id
+           ,venue_id
+           ,home_team_id
+           ,away_team_id
+           ,match_date
+           ,kickoff_time
+           ,home_score
+           ,away_score
+           ,status
+        ) values (
+            #{leagueId}
+           ,#{venueId}
+           ,#{homeTeamId}
+           ,#{awayTeamId}
+           ,#{matchDate}
+           ,#{kickoffTime}
+           ,#{homeScore}
+           ,#{awayScore}
+           ,#{status}
+        )
+    </insert>
+
+    <!-- 경기 수정 -->
+    <update id="matchUpdate" parameterType="com.letskuf.dto.MatchDTO">
+        update match_game
+           set league_id = #{leagueId},
+               venue_id = #{venueId},
+               home_team_id = #{homeTeamId},
+               away_team_id = #{awayTeamId},
+               match_date = #{matchDate},
+               kickoff_time = #{kickoffTime},
+               home_score = #{homeScore},
+               away_score = #{awayScore},
+               status = #{status}
+         where match_id = #{matchId}
+    </update>
+
+    <!-- 경기 삭제 -->
+    <delete id="matchDelete" parameterType="int">
+        delete
+          from match_game
+         where match_id = #{matchId}
+    </delete>
+
+    <!-- 경기 유니폼 등록 -->
+    <insert id="matchUniformSave" parameterType="com.letskuf.dto.MatchUniformDTO" useGeneratedKeys="true" keyProperty="matchUniformId">
+        insert into match_uniform(
+            match_id
+           ,team_id
+           ,top_color
+           ,bottom_color
+           ,socks_color
+        ) values (
+            #{matchId}
+           ,#{teamId}
+           ,#{topColor}
+           ,#{bottomColor}
+           ,#{socksColor}
+        )
+    </insert>
+
+    <!-- 경기 유니폼 수정 -->
+    <update id="matchUniformUpdate">
+        update match_uniform
+           set match_id = #{matchId},
+               team_id = #{teamId},
+               top_color = #{topColor},
+               bottom_color = #{bottomColor},
+               socks_color = #{socksColor}
+         where match_uniform_id = #{matchUniformId}
+    </update>
+
+    <!-- 경기 유니폼 삭제 -->
+    <delete id="matchUniformDelete" parameterType="int">
+        delete
+          from match_uniform
+         where match_uniform_id = #{matchUniformId}
+    </delete>
+
+    <!-- 경기 전체 건수 조회 -->
+    <select id="matchListCnt" resultType="java.lang.Integer">
+        select COUNT(*)
+          from match_game
+    </select>
+
+    <!-- resultMap 정의 -->
+    <resultMap id="matchListMap" type="com.letskuf.dto.MatchDTO">
+        <result property="matchId" column="match_id" />
+        <result property="matchDate" column="match_date" />
+        <result property="kickoffTime" column="kickoff_time" />
+        <result property="leagueNm" column="leagueNm" />
+        <result property="venueNm" column="venueNm" />
+        <result property="homeTeamNm" column="homeTeamNm" />
+        <result property="awayTeamNm" column="awayTeamNm" />
+    </resultMap>
+
+    <!-- 경기 전체 조회 -->
+    <select id="matchList" parameterType="com.letskuf.dto.MatchDTO" resultMap="matchListMap">
+        select mg.match_id
+              ,mg.match_date
+              ,mg.kickoff_time
+              ,lt.name AS leagueNm
+              ,v.name AS venueNm
+              ,ht.team_nm AS homeTeamNm
+              ,at.team_nm AS awayTeamNm
+          from match_game mg
+          left join league_tournament lt
+                 on mg.league_id = lt.league_id
+          left join venue v
+                 on mg.venue_id = v.venue_id
+           left join team ht
+                  on mg.home_team_id = ht.team_id
+           left join team at
+                  on mg.away_team_id = at.team_id
+          order by match_id asc
+          limit #{recordCountPerPage} offset #{firstIndex}
+    </select>
+
+    <!-- 경기 상세 조회 -->
+    <select id="matchByMatchId">
+        select
+          from match_game
+         where match_id = #{matchId}
+    </select>
+</mapper>
