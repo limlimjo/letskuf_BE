@@ -13,6 +13,7 @@ import java.util.List;
 public class MatchDTO {
     private int matchId;
     private int leagueId;
+    private String type;
     private String leagueNm;
     private int venueId;
     private String venueNm;

@@ -98,4 +98,19 @@ public class MatchAPIController {
 
         return resultVO;
     }
+
+    /** 경기 상세 조회 **/
+    @GetMapping("/retrieveMatchDetail.do")
+    public ResultVO retrieveMatchDetail(@RequestParam("matchId") int matchId) throws Exception {
+
+        ResultVO resultVO = new ResultVO();
+
+        Map<String, Object> resultMap = matchService.retrieveMatchById(matchId);
+
+        resultVO.setResult(resultMap);
+        resultVO.setResultCode(200);
+        resultVO.setResultMessage("성공했습니다.");
+
+        return resultVO;
+    }
 }

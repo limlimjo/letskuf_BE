@@ -30,14 +30,20 @@ public class MatchRepository {
         sql.update("Match.matchUpdate", matchDTO);
     }
 
-    /** TODO: 경기 유니폼 수정 **/
+    /** 경기 유니폼 수정 **/
+    public void updateMatchUniform(MatchUniformDTO matchUniformDTO) {
+        sql.update("Match.matchUniformUpdate", matchUniformDTO);
+    }
 
     /** 경기 삭제 **/
     public void deleteMatch(int matchId) {
-        sql.delete("Match.matchDelte", matchId);
+        sql.delete("Match.matchDelete", matchId);
     }
 
-    /** TODO: 경기 유니폼 삭제 **/
+    /** 경기 유니폼 삭제 **/
+    public void deleteMatchUniform(int matchUniformId) {
+        sql.delete("Match.matchUniformDelete", matchUniformId);
+    }
 
     /** 경기 전체 조회 **/
     public List<MatchDTO> selectMatches(MatchDTO matchDTO) {
@@ -51,6 +57,11 @@ public class MatchRepository {
 
     /** 경기 상세 조회 **/
     public MatchDTO selectMatchById(int matchId) {
-        return sql.selectOne("Match.machByMatchId", matchId);
+        return sql.selectOne("Match.matchByMatchId", matchId);
+    }
+
+    /** 경기 유니폼 상세 조회 **/
+    public List<MatchUniformDTO> selectMatchUniformById(int matchId) {
+        return sql.selectList("Match.matchUniformByMatchId", matchId);
     }
 }

@@ -60,7 +60,7 @@ public class SecurityConfig {
                 // URL별 권한 설정 (인가)
                 .authorizeHttpRequests(auth -> auth
                         // 로그인은 누구나 가능
-                        .requestMatchers("/api/login").permitAll()
+                        .requestMatchers("/api/login", "/api/logout").permitAll()
                         // /admin/**는 ADMIN 권한 필요
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/me").authenticated()
@@ -75,7 +75,10 @@ public class SecurityConfig {
                 // 로그아웃 설정
                 .logout(logout -> logout
                         // /logout 요청 시 로그아웃 처리
-                        .logoutUrl("/logout")
+                        .logoutUrl("/api/logout")
+                        .logoutSuccessHandler((req, res, auth) -> {
+                            res.setStatus(200);
+                        })
                         // 세션 완전히 삭제
                         .invalidateHttpSession(true)
                 );

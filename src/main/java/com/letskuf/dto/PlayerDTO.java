@@ -14,6 +14,7 @@ import java.util.List;
 public class PlayerDTO {
     private int no;
     private int playerId;
+    private int playerTeamId;
     private String name;
     private LocalDate birthDate;
     private int teamId;

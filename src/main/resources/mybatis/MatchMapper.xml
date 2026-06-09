@@ -124,10 +124,66 @@
           limit #{recordCountPerPage} offset #{firstIndex}
     </select>
 
+    <!-- resultMap 정의 -->
+    <resultMap id="matchDetailMap" type="com.letskuf.dto.MatchDTO">
+        <result property="leagueId" column="league_id" />
+        <result property="matchId" column="match_id" />
+        <result property="matchDate" column="match_date" />
+        <result property="kickoffTime" column="kickoff_time" />
+        <result property="type" column="type" />
+        <result property="leagueNm" column="leagueNm" />
+        <result property="venueId" column="venue_id" />
+        <result property="venueNm" column="venueNm" />
+        <result property="homeTeamId" column="homeTeamId" />
+        <result property="homeTeamNm" column="homeTeamNm" />
+        <result property="awayTeamId" column="awayTeamId" />
+        <result property="awayTeamNm" column="awayTeamNm" />
+    </resultMap>
+
     <!-- 경기 상세 조회 -->
-    <select id="matchByMatchId">
-        select
-          from match_game
+    <select id="matchByMatchId" parameterType="com.letskuf.dto.MatchDTO" resultMap="matchDetailMap">
+        select mg.league_id
+              ,mg.match_id
+              ,mg.match_date
+              ,mg.kickoff_time
+              ,lt.name AS leagueNm
+              ,lt.type
+              ,v.venue_id
+              ,v.name AS venueNm
+              ,ht.team_id AS homeTeamId
+              ,ht.team_nm AS homeTeamNm
+              ,at.team_id AS awayTeamId
+              ,at.team_nm AS awayTeamNm
+          from match_game mg
+          left join league_tournament lt
+                 on mg.league_id = lt.league_id
+          left join venue v
+                 on mg.venue_id = v.venue_id
+          left join team ht
+                 on mg.home_team_id = ht.team_id
+          left join team at
+                 on mg.away_team_id = at.team_id
+          where match_id = #{matchId}
+    </select>
+
+    <!-- resultMap 정의 -->
+    <resultMap id="matchUniformDetailMap" type="com.letskuf.dto.MatchUniformDTO">
+        <result property="matchUniformId" column="match_uniform_id" />
+        <result property="matchId" column="match_id" />
+        <result property="teamId" column="team_id" />
+        <result property="topColor" column="top_color" />
+        <result property="bottomColor" column="bottom_color" />
+        <result property="socksColor" column="socks_color" />
+    </resultMap>
+
+    <select id="matchUniformByMatchId" parameterType="com.letskuf.dto.MatchUniformDTO" resultMap="matchUniformDetailMap">
+        select match_uniform_id
+              ,match_id
+              ,team_id
+              ,top_color
+              ,bottom_color
+              ,socks_color
+          from match_uniform
          where match_id = #{matchId}
     </select>
 </mapper>

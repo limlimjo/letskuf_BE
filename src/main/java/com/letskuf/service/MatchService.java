@@ -48,8 +48,22 @@ public class MatchService {
 
         // TODO: 경기 일시 수정할 때 경기 일시가 league_tournament의 start_date와 end_date 사이에 속하는지 체크
 
+        int matchId = matchDTO.getMatchId();
+
         // 경기 수정
         matchRepository.updateMatch(matchDTO);
+
+        // 기존 유니폼 삭제
+        matchRepository.deleteMatchUniform(matchId);
+
+        // 유니폼 재등록
+        if (matchDTO.getUniformList() != null) {
+            for (MatchUniformDTO uniform : matchDTO.getUniformList()) {
+
+                uniform.setMatchId(matchId);
+                matchRepository.saveMatchUniform(uniform);
+            }
+        }
     }
 
     /** 경기 삭제 **/
@@ -62,6 +76,7 @@ public class MatchService {
             throw new IllegalArgumentException("존재하지 않는 경기 정보 입니다.: " + matchId);
         }
 
+        // 경기 삭제
         matchRepository.deleteMatch(matchId);
     }
 
@@ -75,6 +90,23 @@ public class MatchService {
 
         map.put("resultList", list);
         map.put("resultCnt", Integer.toString(cnt));
+
+        return map;
+    }
+
+    /** 경기 상세 조회 **/
+    public Map<String, Object> retrieveMatchById(int matchId) throws Exception {
+
+        Map<String, Object> map = new HashMap<>();
+
+        // 경기 조회
+        MatchDTO match = matchRepository.selectMatchById(matchId);
+
+        // 유니폼 조회
+        List<MatchUniformDTO> matchUniform = matchRepository.selectMatchUniformById(matchId);
+
+        map.put("match", match);
+        map.put("matchUniform", matchUniform);
 
         return map;
     }
