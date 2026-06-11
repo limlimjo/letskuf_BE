@@ -110,4 +110,10 @@ public class MatchService {
 
         return map;
     }
+
+    /** 경기 상태 변경 **/
+    @Transactional(rollbackFor = Exception.class)
+    public void updateMatchStatus(MatchDTO matchDTO) throws Exception {
+        matchRepository.updateMatchStatus(matchDTO);
+    }
 }

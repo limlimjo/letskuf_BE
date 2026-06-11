@@ -64,4 +64,9 @@ public class MatchRepository {
     public List<MatchUniformDTO> selectMatchUniformById(int matchId) {
         return sql.selectList("Match.matchUniformByMatchId", matchId);
     }
+
+    /** 경기 상태 변경 **/
+    public void updateMatchStatus(MatchDTO matchDTO) {
+        sql.update("Match.updateMatchStatus", matchDTO);
+    }
 }

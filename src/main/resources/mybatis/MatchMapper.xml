@@ -68,7 +68,7 @@
     </insert>
 
     <!-- 경기 유니폼 수정 -->
-    <update id="matchUniformUpdate">
+    <update id="matchUniformUpdate" parameterType="com.letskuf.dto.MatchUniformDTO">
         update match_uniform
            set match_id = #{matchId},
                team_id = #{teamId},
@@ -96,6 +96,7 @@
         <result property="matchId" column="match_id" />
         <result property="matchDate" column="match_date" />
         <result property="kickoffTime" column="kickoff_time" />
+        <result property="status" column="status" />
         <result property="leagueNm" column="leagueNm" />
         <result property="venueNm" column="venueNm" />
         <result property="homeTeamNm" column="homeTeamNm" />
@@ -107,6 +108,7 @@
         select mg.match_id
               ,mg.match_date
               ,mg.kickoff_time
+              ,mg.status
               ,lt.name AS leagueNm
               ,v.name AS venueNm
               ,ht.team_nm AS homeTeamNm
@@ -186,4 +188,11 @@
           from match_uniform
          where match_id = #{matchId}
     </select>
+
+    <!-- 경기 상태 변경 -->
+    <update id="updateMatchStatus" parameterType="com.letskuf.dto.MatchDTO">
+        update match_game
+           set status = #{status}
+         where match_id = #{matchId}
+    </update>
 </mapper>
