@@ -82,7 +82,7 @@
         <result property="name" column="name" />
         <result property="birthDate" column="birth_date" />
         <result property="teamNm" column="team_nm" />
-        <result property="position" column="position" />
+        <result property="title" column="title" />
     </resultMap>
 
     <!-- 코칭스태프/임원 전체 조회 -->
@@ -91,7 +91,7 @@
               ,c.name
               ,c.birth_date
               ,t.team_nm
-              ,c.position
+              ,c.position as title
         from (
         select
          coach_id
@@ -115,14 +115,14 @@
     <!-- coachDetailListMap resultMap 정의 -->
     <resultMap id="coachDetailListMap" type="com.letskuf.dto.CoachDTO">
         <result property="name" column="name" />
-        <result property="position" column="position" />
+        <result property="title" column="title" />
         <result property="typeGbn" column="type_gbn" />
     </resultMap>
 
     <!-- 코칭스태프/임원 상세 조회(teamId에 따른) -->
     <select id="coachListByTeamId" parameterType="int" resultMap="coachDetailListMap">
         select c.name
-              ,c.position
+              ,c.position as title
               ,c.type_gbn
         from coach c
         where c.team_id = #{teamId}
@@ -147,7 +147,7 @@
         <result property="birthDate" column="birth_date" />
         <result property="teamId" column="team_id" />
         <result property="typeGbn" column="type_gbn" />
-        <result property="position" column="position" />
+        <result property="title" column="title" />
     </resultMap>
 
     <!-- 코칭스태프/임원 상세 조회 (수정용) -->
@@ -157,7 +157,7 @@
               ,c.birth_date
               ,c.team_id
               ,c.type_gbn
-              ,c.position
+              ,c.position as title
         from (
                  select coach_id
                       ,name

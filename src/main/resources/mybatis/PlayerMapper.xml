@@ -59,6 +59,7 @@
                position = #{position},
                uniform_num = #{uniformNum},
                grade = #{grade},
+               join_year = #{joinYear}
           where player_id = #{playerId}
             and leave_year is null
     </update>
@@ -199,6 +200,7 @@
         <result property="position" column="position" />
         <result property="uniformNum" column="uniform_num" />
         <result property="grade" column="grade" />
+        <result property="joinYear" column="join_year" />
         <result property="height" column="height" />
         <result property="weight" column="weight" />
     </resultMap>
@@ -213,6 +215,7 @@
               ,pt.position
               ,pt.uniform_num
               ,pt.grade
+              ,pt.join_year
               ,p.height
               ,p.weight
           from player p
