@@ -1,6 +1,7 @@
 package com.letskuf.repository;
 
 import com.letskuf.dto.MatchDTO;
+import com.letskuf.dto.MatchSearchDTO;
 import com.letskuf.dto.MatchUniformDTO;
 import lombok.RequiredArgsConstructor;
 import org.mybatis.spring.SqlSessionTemplate;
@@ -65,8 +66,23 @@ public class MatchRepository {
         return sql.selectList("Match.matchUniformByMatchId", matchId);
     }
 
+    /** 라인업 등록 상태 확인 **/
+    public boolean isLineupCompleted(int matchId) {
+        return sql.selectOne("Match.isLineupCompleted", matchId);
+    }
+
     /** 경기 상태 변경 **/
     public void updateMatchStatus(MatchDTO matchDTO) {
         sql.update("Match.updateMatchStatus", matchDTO);
+    }
+
+    /** 경기 결과 조회 **/
+    public List<MatchDTO> selectMatchResultList(MatchSearchDTO matchSearchDTO) {
+        return sql.selectList("Match.selectMatchResultList", matchSearchDTO);
+    }
+
+    /** 경기 결과 **/
+    public int selectMatchResultCount(MatchSearchDTO matchSearchDTO) {
+        return sql.selectOne("Match.selectMatchResultCount", matchSearchDTO);
     }
 }

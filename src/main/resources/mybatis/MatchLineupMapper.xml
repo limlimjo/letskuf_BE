@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="MatchLineup">
+    <!-- 라인업 조회 -->
+    <!-- matchListMap resultMap 정의 -->
+    <resultMap id="matchListMap" type="com.letskuf.dto.MatchDTO">
+        <result property="matchId" column="match_id" />
+        <result property="status" column="status" />
+        <result property="homeTeamId" column="home_team_id" />
+        <result property="awayTeamId" column="away_team_id" />
+        <result property="homeFormation" column="home_formation" />
+        <result property="awayFormation" column="away_formation"/>
+        <result property="homeTeamNm" column="homeTeamNm" />
+        <result property="awayTeamNm" column="awayTeamNm" />
+    </resultMap>
+
+    <!-- 경기 정보 조회 -->
+    <select id="matchList" parameterType="int" resultMap="matchListMap">
+        SELECT mg.match_id
+              ,mg.status
+              ,mg.home_team_id
+              ,mg.away_team_id
+              ,mg.home_formation
+              ,mg.away_formation
+              ,ht.team_nm AS homeTeamNm
+              ,at.team_nm AS awayTeamNm
+          FROM match_game mg
+          JOIN team ht
+            ON mg.home_team_id = ht.team_id
+          JOIN team at
+            ON mg.away_team_id = at.team_id
+         WHERE mg.match_id = #{matchId}
+    </select>
+
+    <!-- matchLineupMap resultMap 정의 -->
+    <resultMap id="matchLineupMap" type="com.letskuf.dto.MatchLineupDTO">
+        <result property="playerId" column="player_id"/>
+        <result property="teamId" column="team_id"/>
+        <result property="position" column="position"/>
+        <result property="isStarting" column="is_starting"/>
+        <result property="uniformNum" column="uniform_num"/>
+        <result property="name" column="name"/>
+    </resultMap>
+
+    <select id="matchLineup" parameterType="com.letskuf.dto.MatchLineupDTO" resultMap="matchLineupMap">
+        select ml.player_id
+              ,ml.team_id
+              ,ml.position
+              ,ml.is_starting
+              ,pt.uniform_num
+              ,p.name
+          from match_lineup ml
+          join player_team pt
+            on ml.player_id = pt.player_id
+           and ml.team_id = pt.team_id
+          join player p
+            on ml.player_id = p.player_id
+         where ml.match_id = #{matchId}
+           and ml.team_id = #{teamId}
+         order by ml.is_starting desc,
+                  pt.uniform_num
+    </select>
+
+    <!-- matchPlayerMap resultMap 정의 -->
+    <resultMap id="matchPlayerMap" type="com.letskuf.dto.PlayerDTO">
+        <result property="playerId" column="player_id" />
+        <result property="uniformNum" column="uniform_num" />
+        <result property="name" column="name" />
+        <result property="position" column="player_position" />
+    </resultMap>
+
+    <!-- HOME 선수 조회 -->
+    <select id="matchHomePlayer" parameterType="int" resultMap="matchPlayerMap">
+        select pt.player_id
+              ,pt.uniform_num
+              ,p.name
+              ,pt.position
+         from player_team pt
+          join player p
+            on pt.player_id = p.player_id
+         where pt.team_id = #{homeTeamId}
+           and pt.leave_year is null
+         order by pt.uniform_num
+    </select>
+
+    <!-- AWAY 선수 조회 -->
+    <select id="matchAwayPlayer" parameterType="int" resultMap="matchPlayerMap">
+        select pt.player_id
+              ,pt.uniform_num
+              ,p.name
+              ,pt.position
+         from player_team pt
+          join player p
+            on pt.player_id = p.player_id
+         where pt.team_id = #{awayTeamId}
+           and pt.leave_year is null
+         order by pt.uniform_num
+    </select>
+
+    <!-- 기존 라인업 삭제 -->
+    <delete id="matchLineupDelete" parameterType="int">
+        delete
+          from match_lineup
+         where match_id = #{matchId}
+    </delete>
+
+    <!-- 라인업 저장 -->
+    <insert id="matchLineupSave" parameterType="com.letskuf.dto.MatchLineupDTO">
+        insert into match_lineup(
+           match_id
+          ,player_id
+          ,team_id
+          ,position
+          ,is_starting
+        ) values(
+          #{matchId}
+         ,#{playerId}
+         ,#{teamId}
+         ,#{position}
+         ,#{isStarting}
+        )
+    </insert>
+
+    <!-- 포메이션 저장 -->
+    <update id="updateMatchFormation" parameterType="com.letskuf.dto.MatchLineupDTO">
+        update match_game
+           set home_formation = #{homeFormation},
+               away_formation = #{awayFormation}
+         where match_id = #{matchId}
+    </update>
+
+</mapper>

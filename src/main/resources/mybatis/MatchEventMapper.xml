@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="MatchEvent">
+
+    <!-- matchLineupMap resultMap 정의 -->
+    <resultMap id="matchEventPlayerMap" type="com.letskuf.dto.MatchEventDTO">
+        <result property="playerId" column="player_id"/>
+        <result property="playerNm" column="playerNm"/>
+        <result property="uniformNum" column="uniform_num"/>
+    </resultMap>
+
+    <!-- 선발 선수 조회 -->
+    <select id="selectLineupPlayers" parameterType="com.letskuf.dto.MatchEventDTO" resultMap="matchEventPlayerMap">
+        select p.player_id
+              ,p.name as playerNm
+              ,pt.uniform_num
+          from match_lineup ml
+          join player p
+            on ml.player_id = p.player_id
+          join player_team pt
+            on pt.player_id = p.player_id
+           and pt.team_id = ml.team_id
+         where ml.match_id = #{matchId}
+           and ml.team_id = #{teamId}
+           and ml.is_starting = 1
+    </select>
+
+    <!-- 교체 선수 조회 -->
+    <select id="selectSubPlayers" parameterType="com.letskuf.dto.MatchEventDTO" resultMap="matchEventPlayerMap">
+        select p.player_id
+              ,p.name as playerNm
+              ,pt.uniform_num
+          from match_lineup ml
+          join player p
+            on ml.player_id = p.player_id
+          join player_team pt
+            on pt.player_id = p.player_id
+           and pt.team_id = ml.team_id
+         where ml.match_id = #{matchId}
+           and ml.team_id = #{teamId}
+           and ml.is_starting = 0
+    </select>
+
+    <!-- 이벤트 등록 -->
+    <insert id="insertMatchEvent" parameterType="com.letskuf.dto.MatchEventSaveDTO" useGeneratedKeys="true" keyProperty="eventId">
+        insert into match_event(
+                    match_id,
+                    team_id,
+                    player_id,
+                    related_player_id,
+                    assist_player_id,
+                    event_type,
+                    minute,
+                    extra_minute
+                    )
+        values(
+              #{matchId},
+              #{teamId},
+              #{playerId},
+              #{relatedPlayerId},
+              #{assistPlayerId},
+              #{eventType},
+              #{minute},
+              #{extraMinute}
+        )
+    </insert>
+
+    <!-- 이벤트 삭제 -->
+    <delete id="deleteMatchEvent" parameterType="int">
+        delete
+          from match_event
+         where event_id = #{eventId}
+    </delete>
+
+    <!-- 경기 상태 변경 -->
+    <update id="updateMatchStatus" parameterType="com.letskuf.dto.MatchStatusDTO">
+        update match_game
+           set status = #{status}
+         where match_id = #{matchId}
+    </update>
+
+    <!-- matchLineupMap resultMap 정의 -->
+    <resultMap id="matchTimeLineMap" type="com.letskuf.dto.MatchEventDTO">
+        <result property="eventId" column="event_id"/>
+        <result property="matchId" column="match_id"/>
+        <result property="teamId" column="team_id"/>
+        <result property="teamNm" column="team_nm"/>
+        <result property="playerId" column="player_id"/>
+        <result property="playerNm" column="playerNm"/>
+        <result property="relatedPlayerId" column="related_player_id"/>
+        <result property="eventType" column="event_type"/>
+        <result property="minute" column="minute"/>
+        <result property="extraMinute" column="extra_minute"/>
+    </resultMap>
+
+    <!-- 타임라인 조회 -->
+    <select id="selectMatchTimeline" parameterType="int" resultMap="matchTimeLineMap">
+        select me.event_id
+              ,me.match_id
+              ,me.team_id
+              ,t.team_nm
+              ,me.player_id
+              ,p.name as playerNm
+              ,me.related_player_id
+              ,me.event_type
+              ,me.minute
+              ,me.extra_minute
+          from match_event me
+          left join player p
+            on me.player_id = p.player_id
+          left join team t
+            on me.team_id = t.team_id
+         where me.match_id = #{matchId}
+         order by me.minute desc, me.created_at desc
+    </select>
+
+    <!-- 스코어 조회 -->
+    <select id="selectMatchScore" parameterType="int" resultType="com.letskuf.dto.MatchEventDTO">
+        SELECT COALESCE(SUM(CASE WHEN me.team_id = mg.home_team_id THEN 1 ELSE 0 END), 0) AS homeScore,
+               COALESCE(SUM(CASE WHEN me.team_id = mg.away_team_id THEN 1 ELSE 0 END), 0) AS awayScore
+          FROM match_event me
+          JOIN match_game mg
+            ON me.match_id = mg.match_id
+         WHERE me.match_id = #{matchId}
+           AND me.event_type = 'GOAL';
+    </select>
+</mapper>

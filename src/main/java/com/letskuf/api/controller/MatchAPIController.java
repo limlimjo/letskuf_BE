@@ -3,6 +3,7 @@ package com.letskuf.api.controller;
 import com.letskuf.api.dto.ResultVO;
 import com.letskuf.common.PaginationInfo;
 import com.letskuf.dto.MatchDTO;
+import com.letskuf.dto.MatchSearchDTO;
 import com.letskuf.dto.matchStatusType;
 import com.letskuf.service.MatchService;
 import lombok.RequiredArgsConstructor;
@@ -115,60 +116,15 @@ public class MatchAPIController {
         return resultVO;
     }
 
-    /** 경기 상태 변경 (경기시작) **/
-    @PostMapping("/updateStartMatch.do")
-    public ResultVO updateStartMatch(@RequestBody MatchDTO matchDTO) throws Exception {
+    /** 경기 결과 조회 **/
+    @GetMapping("/retrieveMatchResult.do")
+    public ResultVO retrieveMatchResult(MatchSearchDTO matchSearchDTO) throws Exception {
 
         ResultVO resultVO = new ResultVO();
 
-        matchDTO.setStatus(matchStatusType.LIVE);
-        matchService.updateMatchStatus(matchDTO);
+        Map<String, Object> resultMap = matchService.retrieveMatchResult(matchSearchDTO);
 
-        resultVO.setResultCode(200);
-        resultVO.setResultMessage("성공했습니다.");
-
-        return resultVO;
-    }
-
-    /** 경기 상태 변경 (경기종료) **/
-    @PostMapping("/updateFinishMatch.do")
-    public ResultVO updateFinishMatch(@RequestBody MatchDTO matchDTO) throws Exception {
-
-        ResultVO resultVO = new ResultVO();
-
-        matchDTO.setStatus(matchStatusType.FINISHED);
-        matchService.updateMatchStatus(matchDTO);
-
-        resultVO.setResultCode(200);
-        resultVO.setResultMessage("성공했습니다.");
-
-        return resultVO;
-    }
-
-    /** 경기 상태 변경 (경기취소) **/
-    @PostMapping("/updateCancelMatch.do")
-    public ResultVO updateCancelMatch(@RequestBody MatchDTO matchDTO) throws Exception {
-
-        ResultVO resultVO = new ResultVO();
-
-        matchDTO.setStatus(matchStatusType.CANCELLED);
-        matchService.updateMatchStatus(matchDTO);
-
-        resultVO.setResultCode(200);
-        resultVO.setResultMessage("성공했습니다.");
-
-        return resultVO;
-    }
-
-    /** 경기 상태 변경 (경기연기) **/
-    @PostMapping("/updatePostPoneMatch.do")
-    public ResultVO updatePostPoneMatch(@RequestBody MatchDTO matchDTO) throws Exception {
-
-        ResultVO resultVO = new ResultVO();
-
-        matchDTO.setStatus(matchStatusType.LIVE);
-        matchService.updateMatchStatus(matchDTO);
-
+        resultVO.setResult(resultMap);
         resultVO.setResultCode(200);
         resultVO.setResultMessage("성공했습니다.");
 

@@ -132,6 +132,7 @@
         <result property="matchId" column="match_id" />
         <result property="matchDate" column="match_date" />
         <result property="kickoffTime" column="kickoff_time" />
+        <result property="status" column="status" />
         <result property="type" column="type" />
         <result property="leagueNm" column="leagueNm" />
         <result property="venueId" column="venue_id" />
@@ -148,6 +149,7 @@
               ,mg.match_id
               ,mg.match_date
               ,mg.kickoff_time
+              ,mg.status
               ,lt.name AS leagueNm
               ,lt.type
               ,v.venue_id
@@ -178,6 +180,7 @@
         <result property="socksColor" column="socks_color" />
     </resultMap>
 
+    <!-- 경기 유니폼 상세 조회 -->
     <select id="matchUniformByMatchId" parameterType="com.letskuf.dto.MatchUniformDTO" resultMap="matchUniformDetailMap">
         select match_uniform_id
               ,match_id
@@ -189,10 +192,142 @@
          where match_id = #{matchId}
     </select>
 
+    <!-- 라인업 등록 상태 확인-->
+    <select id="isLineupCompleted" parameterType="int" resultType="boolean">
+    SELECT COUNT(*) = 2
+      FROM (
+            SELECT team_id
+              FROM match_lineup
+             WHERE match_id = #{matchId}
+             GROUP BY team_id
+             HAVING COUNT(*) >= 11
+            ) t
+    </select>
+
     <!-- 경기 상태 변경 -->
     <update id="updateMatchStatus" parameterType="com.letskuf.dto.MatchDTO">
         update match_game
            set status = #{status}
          where match_id = #{matchId}
     </update>
+
+    <!-- resultMap 정의 -->
+    <resultMap id="matchResultListMap" type="com.letskuf.dto.MatchDTO">
+        <result property="matchId" column="match_id" />
+        <result property="matchDate" column="match_date" />
+        <result property="kickoffTime" column="kickoff_time" />
+        <result property="status" column="status" />
+        <result property="leagueNm" column="leagueNm" />
+        <result property="venueNm" column="venueNm" />
+        <result property="homeTeamNm" column="homeTeamNm" />
+        <result property="awayTeamNm" column="awayTeamNm" />
+        <result property="homeScore" column="homeScore" />
+        <result property="awayScore" column="awayScore" />
+    </resultMap>
+
+    <!-- 경기 결과 조회 -->
+    <select id="selectMatchResultList" parameterType="com.letskuf.dto.MatchSearchDTO" resultMap="matchResultListMap">
+        SELECT mg.match_id,
+               mg.match_date,
+               mg.kickoff_time,
+               mg.status,
+               lt.name AS leagueNm,
+               v.name AS venueNm,
+               ht.team_nm AS homeTeamNm,
+               at.team_nm AS awayTeamNm,
+               COALESCE(hs.goal_count,0) AS homeScore,
+               COALESCE(ascore.goal_count,0) AS awayScore
+          FROM match_game mg
+          JOIN league_tournament lt
+            ON mg.league_id = lt.league_id
+          JOIN venue v
+            ON mg.venue_id = v.venue_id
+          JOIN team ht
+            ON mg.home_team_id = ht.team_id
+          JOIN team at
+            ON mg.away_team_id = at.team_id
+        LEFT JOIN (
+            SELECT match_id,
+                   team_id,
+                   COUNT(*) goal_count
+              FROM match_event
+             WHERE event_type='GOAL'
+          GROUP BY match_id, team_id
+        ) hs
+        ON hs.match_id = mg.match_id
+        AND hs.team_id = mg.home_team_id
+        LEFT JOIN (
+            SELECT match_id,
+                   team_id,
+                   COUNT(*) goal_count
+              FROM match_event
+             WHERE event_type='GOAL'
+          GROUP BY match_id, team_id
+        ) ascore
+        ON ascore.match_id = mg.match_id
+        AND ascore.team_id = mg.away_team_id
+        <where>
+            <if test="type != null">
+                AND lt.type = #{type}
+            </if>
+            <if test="leagueId != null and leagueId != ''">
+                AND mg.league_id = #{leagueId}
+            </if>
+            <if test="keyword != null and keyword != ''">
+                AND (
+                    ht.team_nm LIKE CONCAT('%',#{keyword},'%')
+                OR
+                    at.team_nm LIKE CONCAT('%',#{keyword},'%')
+                )
+            </if>
+            <if test="status != null and status != ''">
+                AND mg.status = #{status}
+            </if>
+            <if test="startDate != null">
+                AND mg.match_date <![CDATA[>=]]> #{startDate}
+            </if>
+            <if test="endDate != null">
+                AND mg.match_date <![CDATA[<=]]> #{endDate}
+            </if>
+        </where>
+        ORDER BY mg.match_date DESC,
+                 mg.kickoff_time ASC
+        LIMIT #{recordCountPerPage} OFFSET #{firstIndex}
+    </select>
+
+    <!-- 경기 결과 갯수 -->
+    <select id="selectMatchResultCount" parameterType="com.letskuf.dto.MatchSearchDTO" resultType="int">
+        SELECT COUNT(*)
+          FROM match_game mg
+          JOIN league_tournament lt
+            ON mg.league_id = lt.league_id
+          JOIN team ht
+            ON mg.home_team_id=ht.team_id
+          JOIN team at
+            ON mg.away_team_id=at.team_id
+        <where>
+            <if test="type != null">
+                AND lt.type = #{type}
+            </if>
+            <if test="leagueId != null and leagueId != ''">
+                AND mg.league_id = #{leagueId}
+            </if>
+            <if test="keyword != null and keyword != ''">
+                AND (
+                ht.team_nm LIKE CONCAT('%',#{keyword},'%')
+                OR
+                at.team_nm LIKE CONCAT('%',#{keyword},'%')
+                )
+            </if>
+            <if test="status != null and status != ''">
+                AND mg.status = #{status}
+            </if>
+            <if test="startDate != null">
+                AND mg.match_date <![CDATA[>=]]> #{startDate}
+            </if>
+            <if test="endDate != null">
+                AND mg.match_date <![CDATA[<=]]> #{endDate}
+            </if>
+        </where>
+    </select>
 </mapper>

@@ -21,10 +21,12 @@ public class MatchDTO {
     private String homeTeamNm;
     private int awayTeamId;
     private String awayTeamNm;
+    private String homeFormation;
+    private String awayFormation;
     private LocalDate matchDate;
     private String kickoffTime;
-    private int homeScore;
-    private int awayScore;
+    private Integer homeScore;
+    private Integer awayScore;
     private List<MatchUniformDTO> uniformList;
     private matchStatusType status;
     private String createdAt;

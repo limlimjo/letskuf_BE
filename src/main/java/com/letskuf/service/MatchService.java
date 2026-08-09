@@ -1,8 +1,8 @@
 package com.letskuf.service;
 
-import com.letskuf.dto.LeagueDTO;
-import com.letskuf.dto.MatchDTO;
-import com.letskuf.dto.MatchUniformDTO;
+import com.letskuf.common.PaginationInfo;
+import com.letskuf.dto.*;
+import com.letskuf.repository.MatchEventRepository;
 import com.letskuf.repository.MatchRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +20,7 @@ public class MatchService {
 
     /* 사용할 서비스 주입 */
     private final MatchRepository matchRepository;
+    private final MatchEventRepository matchEventRepository;
 
     /** 경기 등록 **/
     @Transactional(rollbackFor = Exception.class)
@@ -105,8 +106,28 @@ public class MatchService {
         // 유니폼 조회
         List<MatchUniformDTO> matchUniform = matchRepository.selectMatchUniformById(matchId);
 
+        // 라인업 등록 상태 확인
+        boolean lineupCompleted = matchRepository.isLineupCompleted(matchId);
+
+        // 타임라인 리스트
+        List<MatchEventDTO> timeline = null;
+
+        // 경기 종료 상태일 때만 타임라인 조회
+        if (matchStatusType.FINISHED.equals(match.getStatus())) {
+            timeline = matchEventRepository.selectMatchTimeline(matchId);
+
+            MatchEventDTO matchScore = matchEventRepository.selectMatchScore(matchId);
+
+            if (matchScore != null) {
+                match.setHomeScore(matchScore.getHomeScore());
+                match.setAwayScore(matchScore.getAwayScore());
+            }
+        }
+
         map.put("match", match);
         map.put("matchUniform", matchUniform);
+        map.put("lineupCompleted", lineupCompleted);
+        map.put("timeline", timeline);
 
         return map;
     }
@@ -115,5 +136,31 @@ public class MatchService {
     @Transactional(rollbackFor = Exception.class)
     public void updateMatchStatus(MatchDTO matchDTO) throws Exception {
         matchRepository.updateMatchStatus(matchDTO);
+    }
+
+    /** 경기 결과 조회 **/
+    public Map<String, Object> retrieveMatchResult(MatchSearchDTO matchSearchDTO) throws Exception {
+
+        Map<String, Object> result = new HashMap<>();
+
+        PaginationInfo paginationInfo = new PaginationInfo();
+
+        paginationInfo.setCurrentPageNo(matchSearchDTO.getPageIndex());
+        paginationInfo.setRecordCountPerPage(10);
+        paginationInfo.setPageSize(10);
+
+        matchSearchDTO.setFirstIndex(paginationInfo.getFirstRecordIndex());
+        matchSearchDTO.setRecordCountPerPage(paginationInfo.getRecordCountPerPage());
+
+        List<MatchDTO> resultList = matchRepository.selectMatchResultList(matchSearchDTO);
+
+        int totalCount = matchRepository.selectMatchResultCount(matchSearchDTO);
+
+        paginationInfo.setTotalRecordCount(totalCount);
+
+        result.put("resultList", resultList);
+        result.put("paginationInfo", paginationInfo);
+
+        return result;
     }
 }
