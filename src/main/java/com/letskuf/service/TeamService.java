@@ -1,5 +1,6 @@
 package com.letskuf.service;
 
+import com.letskuf.common.S3Uploader;
 import com.letskuf.dto.CoachDTO;
 import com.letskuf.dto.PlayerDTO;
 import com.letskuf.dto.TeamFileDTO;
@@ -40,55 +41,58 @@ public class TeamService {
     private final TeamRepository teamRepository;
     private final CoachRepository coachRepository;
     private final PlayerRepository playerRepository;
+    private final S3Uploader s3Uploader;
 
     /* 팀 등록 */
     @Transactional(rollbackFor = Exception.class) // 모든 예외 발생 시 롤백
     public void registerTeam(TeamDTO teamDTO) throws Exception {
-        // 파일 첨부가 필수가 아니므로, 파일이 없을 때와 파일이 있을 때로 나눔
-        // 파일이 없을 때
-        if (teamDTO.getTeamFile().get(0).isEmpty()) {
-            // fileAttached 값 0으로 설정하고 저장
+
+        List<MultipartFile> teamFiles = teamDTO.getTeamFile();
+
+        // 파일이 없는 경우
+        if (teamFiles == null || teamFiles.isEmpty() || teamFiles.get(0).isEmpty()) {
+
             teamDTO.setFileAttached(0);
             teamRepository.save(teamDTO);
+
             log.info("팀 정보 저장(파일x): {}", teamDTO);
+
+            return;
         }
-        // 파일이 있을 때
-        else {
-            // fileAttached 값 1로 설정하고 저장
-            teamDTO.setFileAttached(1);
-            TeamDTO savedTeam = teamRepository.save(teamDTO);
-            log.info("팀 정보 저장(파일o): {}", teamDTO);
-            // 파일만 따로 가져오기
-            for (MultipartFile teamFile: teamDTO.getTeamFile()) {
-                // 파일 이름 가져오기
-                String originalFileName = teamFile.getOriginalFilename();
-                // 저장용 이름 만들기
-                String storedFileName = System.currentTimeMillis() + "-" + originalFileName;
-                // TeamFileDTO 세팅 (originalFileName, storedFileName, teamId)
-                TeamFileDTO teamFileDTO = new TeamFileDTO();
-                teamFileDTO.setOriginalFileName(originalFileName);
-                teamFileDTO.setStoredFileName(storedFileName);
-                teamFileDTO.setTeamId(savedTeam.getTeamId());
-                // 파일 저장용 폴더에 파일 저장 처리
-                String savePath = "/Users/selimjo/Desktop/letskuf_pic/team/";
-                String storedFilePath = savePath + storedFileName;
 
-                // 파일 저장용 폴더 없는 경우 폴더 생성
-                Path directoryPath = Paths.get(savePath);
-                if (!Files.exists(directoryPath)) {
-                    try {
-                        Files.createDirectories(directoryPath);
-                        log.info("폴더 생성 완료: " + savePath);
-                    } catch (IOException e) {
-                        log.error("파일 저장 폴더 생성 실패: " + savePath, e);
-                        throw new IOException("파일 저장 폴더 생성에 실패하였습니다.", e);
-                    }
-                }
+        // 파일이 있는 경우
+        teamDTO.setFileAttached(1);
 
-                teamFile.transferTo(new File(storedFilePath));
-                // team_file 테이블에 저장
-                teamRepository.saveFile(teamFileDTO);
+        TeamDTO savedTeam = teamRepository.save(teamDTO);
+
+        MultipartFile teamFile = teamFiles.get(0);
+
+        String storedFileName = null;
+
+        try {
+            // S3 업로드
+            storedFileName = s3Uploader.uploadFileToS3(teamFile, "team");
+
+            // team_file 저장
+            TeamFileDTO teamFileDTO = new TeamFileDTO();
+
+            teamFileDTO.setOriginalFileName(teamFile.getOriginalFilename());
+            teamFileDTO.setStoredFileName(storedFileName);
+            teamFileDTO.setTeamId(savedTeam.getTeamId());
+            teamRepository.saveFile(teamFileDTO);
+
+            log.info("팀 파일 저장 완료: {}", storedFileName);
+
+        } catch (Exception e) {
+
+            // S3 업로드는 성공헀지만 DB 저장이 실패한 경우
+            if (storedFileName != null) {
+                s3Uploader.deleteS3(storedFileName);
             }
+
+            log.error("팀 등록 실패", e);
+
+            throw e;
         }
     }
 
@@ -104,51 +108,61 @@ public class TeamService {
 
         // 파일이 새로 업로드 되었는지 확인
         List<MultipartFile> newFiles = teamDTO.getTeamFile();
-        String savePath = "/Users/selimjo/Desktop/letskuf_pic/team/";
 
-        // 파일 변경 있을 경우
+        // 새 파일이 있는 경우
         if (newFiles != null && !newFiles.isEmpty() && !newFiles.get(0).isEmpty()) {
-            // 기존 파일이 있다면 삭제 처리
+
+            MultipartFile newFile = newFiles.get(0);
+
+            // 기존 파일 조회
             List<TeamFileDTO> existingFiles = teamRepository.selectTeamFileListByTeamId(teamDTO.getTeamId());
 
-            for (TeamFileDTO file : existingFiles) {
-                File storedFile = new File(savePath + file.getStoredFileName());
-                if (storedFile.exists()) {
-                    storedFile.delete();
-                }
-                log.info("파일 변경있을 경우 삭제 되어야함");
-                teamRepository.deleteFile(file.getFileId());
-            }
+            // 새 S3 파일
+            String newStoredFileName = null;
 
-            // 새 파일 저장
-            teamDTO.setFileAttached(1);
-            for (MultipartFile teamFile: newFiles) {
-                String originalFileName = teamFile.getOriginalFilename();
-                String storedFileName = System.currentTimeMillis() + "-" + originalFileName;
-                String storedFilePath = savePath + storedFileName;
+            try {
+                // S3 업로드
+                newStoredFileName = s3Uploader.uploadFileToS3(newFile, "team");
 
-                // 저장 폴더 없으면 생성
-                Path directoryPath = Paths.get(savePath);
-                if (!Files.exists(directoryPath)) {
-                    Files.createDirectories(directoryPath);
-                }
+                log.info("새 팀 이미지 S3 업로드 완료: {}", newStoredFileName);
 
-                teamFile.transferTo(new File(storedFilePath));
-
+                // team_file 저장
                 TeamFileDTO newFileDTO = new TeamFileDTO();
-                newFileDTO.setOriginalFileName(originalFileName);
-                newFileDTO.setStoredFileName(storedFileName);
+
+                newFileDTO.setOriginalFileName(newFile.getOriginalFilename());
+                newFileDTO.setStoredFileName(newStoredFileName);
                 newFileDTO.setTeamId(teamDTO.getTeamId());
-
                 teamRepository.saveFile(newFileDTO);
-            }
 
-        // 파일 변경 없을 경우
+                // 기존 파일 DB 정보 삭제
+                for (TeamFileDTO existingFile : existingFiles) {
+                    teamRepository.deleteFile(existingFile.getFileId());
+                }
+
+                // 팀 정보 수정
+                teamDTO.setFileAttached(1);
+                teamRepository.update(teamDTO);
+
+                // 기존 S3 파일 삭제
+                for (TeamFileDTO existingFile : existingFiles) {
+                    s3Uploader.deleteS3(existingFile.getStoredFileName());
+                }
+
+                log.info("팀 이미지 변경 완료: teamId={}", teamDTO.getTeamId());
+            } catch (Exception e) {
+                // 새 파일이 S3에 올라간 상태에서 DB 작업 등이 실패했다면 새 S3 파일을 삭제함
+                if (newStoredFileName != null) {
+                    s3Uploader.deleteS3(newStoredFileName);
+                }
+
+                log.error("팀 수정 실패: teamId={}", teamDTO.getTeamId(), e);
+
+                throw e;
+            }
         } else {
             teamDTO.setFileAttached(existingTeam.getFileAttached());
+            teamRepository.update(teamDTO);
         }
-        // 팀 정보 수정
-        teamRepository.update(teamDTO);
     }
 
     /* 팀 삭제 */
@@ -205,6 +219,14 @@ public class TeamService {
         // 팀 정보
         TeamDTO team = teamRepository.selectTeamById(teamId);
 
+        // 팀 사진 정보
+        TeamFileDTO teamFile = teamRepository.selectUpdateTeamFileById(teamId);
+
+        if (teamFile != null) {
+            String fileUrl = s3Uploader.getFileUrl(teamFile.getStoredFileName());
+            teamFile.setStoredFileName(fileUrl);
+        }
+
         // 지도자 및 임원 정보
         List<CoachDTO> coach = coachRepository.selectCoachByTeamId(teamId);
 
@@ -212,6 +234,7 @@ public class TeamService {
         List<PlayerDTO> player = playerRepository.selectPlayerByTeamId(teamId);
 
         map.put("team", team);
+        map.put("teamFile", teamFile);
         map.put("coaches", coach);
         map.put("players", player);
 
@@ -228,6 +251,11 @@ public class TeamService {
 
         // 팀 사진 정보
         TeamFileDTO teamFile = teamRepository.selectUpdateTeamFileById(teamId);
+
+        if (teamFile != null) {
+            String fileUrl = s3Uploader.getFileUrl(teamFile.getStoredFileName());
+            teamFile.setStoredFileName(fileUrl);
+        }
 
         map.put("team", team);
         map.put("teamFile", teamFile);
