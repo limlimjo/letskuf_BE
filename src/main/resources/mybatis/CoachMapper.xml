@@ -86,23 +86,20 @@
     </resultMap>
 
     <!-- 코칭스태프/임원 전체 조회 -->
-    <select id="coachList" resultMap="coachListMap">
+    <select id="coachList" parameterType="com.letskuf.dto.CoachDTO" resultMap="coachListMap">
         select c.coach_id
               ,c.name
               ,c.birth_date
               ,t.team_nm
               ,c.position as title
-        from (
-        select
-         coach_id
-        ,name
-        ,birth_date
-        ,team_id
-        ,position
-        from coach
-        order by coach_id asc
-        ) c
+        from coach c
         left join team t on c.team_id = t.team_id
+        <where>
+            <if test="keyword != null and keyword != ''">
+                and c.name like concat('%',#{keyword},'%')
+            </if>
+        </where>
+        order by c.coach_id asc
         limit #{recordCountPerPage} offset #{firstIndex}
     </select>
 
@@ -110,6 +107,11 @@
     <select id="coachListCnt" parameterType="com.letskuf.dto.CoachDTO" resultType="java.lang.Integer">
         select COUNT(coach_id)
         from coach
+        <where>
+            <if test="keyword != null and keyword != ''">
+                and name like concat('%',#{keyword},'%')
+            </if>
+        </where>
     </select>
 
     <!-- coachDetailListMap resultMap 정의 -->

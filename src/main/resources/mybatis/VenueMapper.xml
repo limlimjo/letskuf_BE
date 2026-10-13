@@ -48,6 +48,11 @@
     <select id="venueListCnt" resultType="java.lang.Integer">
         select COUNT(*)
           from venue
+        <where>
+            <if test="keyword != null and keyword != ''">
+                and name like concat('%',#{keyword},'%')
+            </if>
+        </where>
     </select>
 
     <!-- resultMap 정의 -->
@@ -69,6 +74,11 @@
         ,address
         ,address_detail
         from venue
+        <where>
+            <if test="keyword != null and keyword != ''">
+                and name like concat('%',#{keyword},'%')
+            </if>
+        </where>
         order by venue_id asc
         limit #{recordCountPerPage} offset #{firstIndex}
     </select>

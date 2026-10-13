@@ -41,7 +41,14 @@
     <select id="leagueListCnt" parameterType="com.letskuf.dto.LeagueDTO" resultType="java.lang.Integer">
         select COUNT(*)
           from league_tournament
-         where type = #{type}
+        <where>
+            <if test="type != null">
+                and type = #{type}
+            </if>
+            <if test="keyword != null and keyword != ''">
+                and name like concat('%',#{keyword},'%')
+            </if>
+        </where>
     </select>
 
     <!-- resultMap 정의 -->
@@ -62,16 +69,16 @@
               ,t.region
               ,t.start_date
               ,t.end_date
-        from (
-             select league_id
-                   ,name
-                   ,region
-                   ,start_date
-                   ,end_date
-             from league_tournament
-             where type = #{type}
-             order by league_id asc
-         ) t
+        from league_tournament t
+        <where>
+            <if test="type != null">
+                and t.type = #{type}
+            </if>
+            <if test="keyword != null and keyword != ''">
+                and t.name like concat('%',#{keyword},'%')
+            </if>
+        </where>
+        order by league_id asc
         limit #{recordCountPerPage} offset #{firstIndex}
     </select>
 

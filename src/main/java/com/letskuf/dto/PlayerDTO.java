@@ -29,6 +29,7 @@ public class PlayerDTO {
     private int fileAttached;
     private List<MultipartFile> file;
     private String createdAt;
+    private String keyword;
 
     private int pageIndex = 1; // 현재페이지
     private int pageUnit = 10; // 페이지갯수

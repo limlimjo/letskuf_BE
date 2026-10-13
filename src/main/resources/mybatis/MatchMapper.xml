@@ -85,7 +85,7 @@
          where match_uniform_id = #{matchUniformId}
     </delete>
 
-    <!-- 경기 전체 건수 조회 -->
+    <!-- 경기 전체 건수 조회 (이 부분 수정 필요) -->
     <select id="matchListCnt" resultType="java.lang.Integer">
         select COUNT(*)
           from match_game
@@ -122,6 +122,11 @@
                   on mg.home_team_id = ht.team_id
            left join team at
                   on mg.away_team_id = at.team_id
+        <where>
+            <if test="keyword != null and keyword != ''">
+                and lt.name like concat('%',#{keyword},'%')
+            </if>
+        </where>
           order by match_id asc
           limit #{recordCountPerPage} offset #{firstIndex}
     </select>

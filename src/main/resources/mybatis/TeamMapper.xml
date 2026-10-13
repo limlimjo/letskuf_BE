@@ -94,16 +94,16 @@
               ,t.team_nm
               ,t.region_nm
               ,c.name as coach_nm
-          from (
-            select  team_id
-                   ,team_nm
-                   ,region_nm
-            from team
-            order by team_id desc
-          ) t
+          from team t
           left join coach c
               on t.team_id = c.team_id
               and c.position = '감독'
+          <where>
+              <if test="keyword != null and keyword != ''">
+                and t.team_nm like concat('%',#{keyword},'%')
+              </if>
+          </where>
+        order by t.team_nm DESC
         limit #{recordCountPerPage} offset #{firstIndex}
     </select>
 
@@ -111,6 +111,11 @@
     <select id="teamListCnt" parameterType="com.letskuf.dto.TeamDTO" resultType="java.lang.Integer">
         select COUNT(team_id)
           from team
+        <where>
+            <if test="keyword != null and keyword != ''">
+                and team_nm like concat('%',#{keyword},'%')
+            </if>
+        </where>
     </select>
 
     <!-- 팀 목록 조회 -->
