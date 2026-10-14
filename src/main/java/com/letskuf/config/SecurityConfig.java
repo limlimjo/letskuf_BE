@@ -28,8 +28,8 @@ public class SecurityConfig {
                     CorsConfiguration config = new CorsConfiguration();
                     // 쿠키(JSESSIONID) 포함 허용 -> 세션 기반에서 필수
                     config.setAllowCredentials(true);
-                    // React 서버 주소 허용
                     config.addAllowedOrigin("http://localhost:5173");
+                    config.addAllowedOrigin("https://lim-project.duckdns.org");
                     // 모든 헤더 허용
                     config.addAllowedHeader("*");
                     // GET, POST 등 모든 HTTP 메서드 허용
