@@ -1,4 +1,3 @@
-
 name: Deploy Backend
 
 on:
@@ -64,41 +63,34 @@ jobs:
             --tag "$REGISTRY/$ECR_REPOSITORY:latest" \
             --push .
 
-      - name: Set up SSH
+      - name: Deploy to EC2 via SSM
         env:
-          SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
-          KNOWN_HOSTS: ${{ secrets.EC2_KNOWN_HOSTS }}
-        run: |
-          mkdir -p ~/.ssh
-          chmod 700 ~/.ssh
-          printf '%s\n' "$SSH_KEY" > ~/.ssh/deploy_key
-          chmod 600 ~/.ssh/deploy_key
-          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
-          chmod 600 ~/.ssh/known_hosts
-
-      - name: Deploy to EC2
-        env:
-          EC2_HOST: ${{ secrets.EC2_HOST }}
-          EC2_USER: ${{ secrets.EC2_USER }}
+          EC2_INSTANCE_ID: ${{ vars.EC2_INSTANCE_ID }}
           AWS_ACCOUNT_ID: ${{ vars.AWS_ACCOUNT_ID }}
           AWS_REGION: ${{ vars.AWS_REGION }}
           IMAGE_TAG: ${{ github.sha }}
+        shell: bash
         run: |
-          ssh -i ~/.ssh/deploy_key \
-            "$EC2_USER@$EC2_HOST" \
-            "AWS_ACCOUNT_ID='$AWS_ACCOUNT_ID' AWS_REGION='$AWS_REGION' IMAGE_TAG='$IMAGE_TAG' bash -s" <<'REMOTE'
-          set -eu
+          set -euo pipefail
 
-          REGISTRY="$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com"
-          IMAGE="$REGISTRY/letskuf-backend:$IMAGE_TAG"
+          cat > deploy-backend.sh <<'REMOTE'
+          #!/bin/bash
+          set -euo pipefail
 
+          REGISTRY="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
+          IMAGE="${REGISTRY}/letskuf-backend:${IMAGE_TAG}"
+
+          echo "Logging in to ECR..."
           aws ecr get-login-password --region "$AWS_REGION" |
             docker login --username AWS --password-stdin "$REGISTRY"
 
+          echo "Pulling image: $IMAGE"
           docker pull "$IMAGE"
 
+          echo "Stopping existing backend container..."
           docker rm -f letskuf-backend 2>/dev/null || true
 
+          echo "Starting backend container..."
           docker run -d \
             --name letskuf-backend \
             --restart unless-stopped \
@@ -106,7 +98,85 @@ jobs:
             -p 127.0.0.1:8080:8080 \
             "$IMAGE"
 
+          echo "Waiting for application startup..."
           sleep 10
-          docker ps --filter name=letskuf-backend
+
+          echo "Container status:"
+          docker ps -a --filter name=letskuf-backend
+
+          echo "Backend logs:"
           docker logs --tail 50 letskuf-backend
           REMOTE
+
+          # EC2에서 실행할 명령을 JSON으로 생성
+          jq -n \
+            --arg account "$AWS_ACCOUNT_ID" \
+            --arg region "$AWS_REGION" \
+            --arg tag "$IMAGE_TAG" \
+            --rawfile script deploy-backend.sh \
+            '{
+              commands: [
+                "cat > /tmp/deploy-backend.sh << '\''DEPLOY_SCRIPT'\''\n" +
+                $script +
+                "\nDEPLOY_SCRIPT\n" +
+                "chmod +x /tmp/deploy-backend.sh\n" +
+                "export AWS_ACCOUNT_ID=" + $account +
+                " AWS_REGION=" + $region +
+                " IMAGE_TAG=" + $tag + "\n" +
+                "bash /tmp/deploy-backend.sh"
+              ]
+            }' > ssm-parameters.json
+
+          echo "Sending deployment command to EC2..."
+
+          COMMAND_ID=$(aws ssm send-command \
+            --region "$AWS_REGION" \
+            --instance-ids "$EC2_INSTANCE_ID" \
+            --document-name "AWS-RunShellScript" \
+            --parameters file://ssm-parameters.json \
+            --comment "Deploy letskuf backend ${IMAGE_TAG}" \
+            --query 'Command.CommandId' \
+            --output text)
+
+          echo "SSM Command ID: $COMMAND_ID"
+
+          STATUS="Pending"
+          INVOCATION=""
+
+          for attempt in $(seq 1 60); do
+            INVOCATION=$(aws ssm get-command-invocation \
+              --region "$AWS_REGION" \
+              --command-id "$COMMAND_ID" \
+              --instance-id "$EC2_INSTANCE_ID" \
+              --output json 2>/dev/null || true)
+
+            STATUS=$(printf '%s' "$INVOCATION" |
+              jq -r '.Status // "Pending"')
+
+            case "$STATUS" in
+              Success|Failed|TimedOut|Cancelled|Undeliverable|Terminated)
+                break
+                ;;
+            esac
+
+            sleep 5
+          done
+
+          echo "Deployment status: $STATUS"
+
+          if [ -n "$INVOCATION" ]; then
+            echo "----- STDOUT -----"
+            printf '%s' "$INVOCATION" |
+              jq -r '.StandardOutputContent // ""'
+
+            echo "----- STDERR -----"
+            printf '%s' "$INVOCATION" |
+              jq -r '.StandardErrorContent // ""'
+          fi
+
+          if [ "$STATUS" != "Success" ]; then
+            echo "SSM deployment failed or timed out."
+            exit 1
+          fi
+
+          echo "Backend deployment completed successfully."
